@@ -20,7 +20,7 @@ export default function Home() {
               GitHub
             </a>
             <a
-              href="#"
+              href="/how-this-works"
               className="text-sm text-gray-600 hover:text-gray-900"
             >
               How This Works
