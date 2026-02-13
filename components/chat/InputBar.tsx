@@ -29,12 +29,15 @@ export default function InputBar({ onSendMessage, isLoading }: InputBarProps) {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as unknown as FormEvent);
+      if (input.trim() && !isLoading) {
+        onSendMessage(input.trim());
+        setInput('');
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t p-4">
+    <form onSubmit={handleSubmit} className="border-t p-4" role="form" aria-label="Chat input form">
       <div className="flex space-x-2">
         <textarea
           ref={inputRef}
@@ -46,11 +49,14 @@ export default function InputBar({ onSendMessage, isLoading }: InputBarProps) {
           rows={1}
           disabled={isLoading}
           autoFocus
+          aria-label="Chat message input"
+          aria-describedby="input-hint"
         />
         <button
           type="submit"
           disabled={!input.trim() || isLoading}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          aria-label={isLoading ? "Sending message..." : "Send message"}
         >
           {isLoading ? (
             <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">

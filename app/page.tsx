@@ -1,9 +1,10 @@
 import ChatPanel from '@/components/chat/ChatPanel';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-white">
-      <header className="border-b px-6 py-4">
+      <header className="border-b px-6 py-4" role="banner">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Pivot</h1>
@@ -27,9 +28,11 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden" role="main">
         <div className="max-w-7xl mx-auto h-full px-6 py-4">
-          <ChatPanel />
+          <ErrorBoundary>
+            <ChatPanel />
+          </ErrorBoundary>
         </div>
       </main>
     </div>

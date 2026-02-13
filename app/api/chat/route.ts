@@ -2,23 +2,56 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createChatCompletion } from '@/lib/claude';
 import { ChatRequest } from '@/lib/types';
 import { initializeRAG, semanticSearch } from '@/lib/mcp-tools';
+import { createRateLimiter, getClientIdentifier } from '@/lib/rate-limit';
+import { isEnvironmentValid } from '@/lib/env';
 import chartSamples from '@/data/samples/chart_samples.json';
 import datasetOverview from '@/data/samples/dataset_overview.json';
 
 // Initialize RAG on first request
 let ragInitialized = false;
 
+// Create rate limiter for chat API
+const rateLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 requests per minute
+  message: 'Too many chat requests. Please wait a moment before trying again.',
+});
+
 export async function POST(req: NextRequest) {
   try {
-    const body: ChatRequest = await req.json();
-    const { messages } = body;
-
-    if (!process.env.ANTHROPIC_API_KEY) {
+    // Check environment
+    if (!isEnvironmentValid()) {
       return NextResponse.json(
-        { error: 'Anthropic API key not configured' },
-        { status: 500 }
+        { error: 'Service unavailable. Please try again later.' },
+        { status: 503 }
       );
     }
+
+    // Rate limiting
+    const clientId = getClientIdentifier(req);
+    const rateLimitResult = await rateLimiter(clientId);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: rateLimitResult.message },
+        { status: 429 }
+      );
+    }
+
+    // Validate request body
+    let body: ChatRequest;
+    try {
+      body = await req.json();
+      if (!body.messages || !Array.isArray(body.messages)) {
+        throw new Error('Invalid request format');
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid request format' },
+        { status: 400 }
+      );
+    }
+
+    const { messages } = body;
 
     // Initialize RAG if not already done
     if (!ragInitialized) {
@@ -193,7 +226,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Call the forecast API
-        const forecastResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/forecast`, {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.headers.get('origin') || 'http://localhost:3000';
+        const forecastResponse = await fetch(`${baseUrl}/api/forecast`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

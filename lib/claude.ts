@@ -1,9 +1,21 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
+import { getEnvironmentConfig } from './env';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+let anthropic: Anthropic | null = null;
+
+function getAnthropicClient(): Anthropic {
+  if (!anthropic) {
+    const config = getEnvironmentConfig();
+    if (!config.ANTHROPIC_API_KEY) {
+      throw new Error('Anthropic API key is not configured');
+    }
+    anthropic = new Anthropic({
+      apiKey: config.ANTHROPIC_API_KEY,
+    });
+  }
+  return anthropic;
+}
 
 export const SYSTEM_PROMPT = `You are a conversational business intelligence assistant with access to powerful data analysis and forecasting tools. You help users analyze e-commerce data through natural language queries.
 
@@ -40,9 +52,15 @@ export const toolDefinitions = [
   },
 ];
 
-export async function createChatCompletion(messages: any[], tools?: any[]) {
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export async function createChatCompletion(messages: ChatMessage[], tools?: any[]) {
   try {
-    const response = await anthropic.messages.create({
+    const client = getAnthropicClient();
+    const response = await client.messages.create({
       model: 'claude-3-haiku-20240307',
       max_tokens: 4096,
       temperature: 0.7,
@@ -58,4 +76,4 @@ export async function createChatCompletion(messages: any[], tools?: any[]) {
   }
 }
 
-export { anthropic };
+export { getAnthropicClient as getAnthropic };
