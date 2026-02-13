@@ -31,10 +31,18 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env*.local
+!.env.example
 
 # vercel
 .vercel
+
+# data pipeline
+/data/notebooks/*.ipynb_checkpoints
+/data/scripts/__pycache__
+/data/samples/*.csv
+/data/samples/*.xlsx
 
 # typescript
 *.tsbuildinfo
