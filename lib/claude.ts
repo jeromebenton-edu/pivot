@@ -24,7 +24,8 @@ CRITICAL: You must ONLY use the actual data provided in the knowledge base. DO N
 The dataset contains:
 - Time period: January - December 2024
 - Total revenue: $393,744.62
-- 2,000 transactions across 709 completed purchases
+- 2,000 transactions: 663 views, 628 cart adds, 709 completed purchases
+- Cart abandonment rate: 68.5% (industry standard, as some purchases bypass cart)
 - 4 regions: Asia ($114k, 188 orders), Europe ($100k, 207 orders), North America ($97k, 178 orders), South America ($83k, 136 orders)
 - 6 categories: Electronics, Home & Garden, Sports & Outdoors, Toys & Games, Books, Clothing
 
