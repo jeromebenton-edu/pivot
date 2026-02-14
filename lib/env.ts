@@ -3,7 +3,8 @@
  */
 
 export interface EnvironmentConfig {
-  ANTHROPIC_API_KEY: string;
+  ANTHROPIC_API_KEY?: string;  // Now optional since we can use OpenAI
+  OPENAI_API_KEY?: string;      // OpenAI API key
   NEXT_PUBLIC_BASE_URL: string;
   CHROMA_CLOUD_URL?: string;
   CHROMA_API_KEY?: string;
@@ -22,8 +23,18 @@ class EnvironmentError extends Error {
  * Validates required environment variables
  */
 export function validateEnvironment(): EnvironmentConfig {
+  // At least one LLM API key is required
+  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+  const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+
+  if (!hasOpenAI && !hasAnthropic) {
+    throw new EnvironmentError(
+      'Missing required LLM API key: Either OPENAI_API_KEY or ANTHROPIC_API_KEY must be set'
+    );
+  }
+
   const required: (keyof EnvironmentConfig)[] = [
-    'ANTHROPIC_API_KEY',
+    // No longer requiring specific keys since we can use either LLM
   ];
 
   const missing: string[] = [];
@@ -41,7 +52,8 @@ export function validateEnvironment(): EnvironmentConfig {
   }
 
   return {
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY!,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
     CHROMA_CLOUD_URL: process.env.CHROMA_CLOUD_URL,
     CHROMA_API_KEY: process.env.CHROMA_API_KEY,

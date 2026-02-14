@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createChatCompletion } from '@/lib/claude';
+import { createChatCompletion, getCurrentProvider } from '@/lib/llm-client';
 import { ChatRequest } from '@/lib/types';
 import { initializeRAG, semanticSearch } from '@/lib/mcp-tools';
 import { createRateLimiter, getClientIdentifier } from '@/lib/rate-limit';
@@ -52,6 +52,9 @@ export async function POST(req: NextRequest) {
     }
 
     const { messages } = body;
+
+    // Log which LLM provider is being used
+    console.log(`Using LLM provider: ${getCurrentProvider()}`);
 
     // Initialize RAG if not already done
     if (!ragInitialized) {
