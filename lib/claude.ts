@@ -65,18 +65,28 @@ export async function createChatCompletion(messages: ChatMessage[], tools?: any[
 
   // Try Claude 3.5 Sonnet first, fall back to Claude 3 Sonnet if not available
   const models = [
-    'claude-3-5-sonnet-20241022',  // Latest and most accurate
-    'claude-3-sonnet-20240229',     // Previous Sonnet version
-    'claude-3-haiku-20240307'       // Fallback to Haiku if needed
+    'claude-3-5-sonnet-20240620',  // Claude 3.5 Sonnet (correct model ID)
+    'claude-3-opus-20240229',       // Claude 3 Opus (most capable)
+    'claude-3-sonnet-20240229',     // Claude 3 Sonnet (balanced)
+    'claude-3-haiku-20240307'       // Claude 3 Haiku (fastest, fallback)
   ];
 
   for (const model of models) {
     try {
       console.log(`Attempting to use model: ${model}`);
+
+      // Set temperature based on model - lower for better accuracy
+      let temperature = 0.3;
+      if (model.includes('haiku')) {
+        temperature = 0.5;  // Haiku needs slightly higher temp
+      } else if (model.includes('opus')) {
+        temperature = 0.2;  // Opus works best with very low temp for factual tasks
+      }
+
       const response = await client.messages.create({
         model,
         max_tokens: 4096,
-        temperature: model.includes('haiku') ? 0.5 : 0.3,  // Slightly higher temp for Haiku
+        temperature,
         system: SYSTEM_PROMPT,
         messages,
         // Tools will be implemented in Phase 2 with proper schema
