@@ -266,8 +266,55 @@ export async function POST(req: NextRequest) {
     if (shouldGenerateChart && !chartConfig) {
       const query = latestUserMessage?.content.toLowerCase() || '';
 
-      // Check for specific metric requests
-      if (query.includes('turnover') && query.includes('rate')) {
+      // Check for quarterly comparison requests (Q3 vs Q4, etc.)
+      const quarterPattern = /q[1-4]|quarter/i;
+      const hasQuarterComparison = quarterPattern.test(query) && (query.includes('vs') || query.includes('compare') || query.includes('versus'));
+
+      if (hasQuarterComparison) {
+        // Extract quarters mentioned
+        const q3Mentioned = /q3|third quarter|jul|aug|sep|july|august|september/i.test(query);
+        const q4Mentioned = /q4|fourth quarter|oct|nov|dec|october|november|december/i.test(query);
+
+        if (q3Mentioned && q4Mentioned) {
+          // Generate Q3 vs Q4 comparison line chart
+          const monthlyData = chartSamples.monthlyTrend.data;
+          const q3q4Data = monthlyData.slice(6); // July to December (indices 6-11)
+
+          // Calculate quarterly totals for context
+          const q3Total = monthlyData.slice(6, 9).reduce((sum, d) => sum + d.revenue, 0);
+          const q4Total = monthlyData.slice(9, 12).reduce((sum, d) => sum + d.revenue, 0);
+          const percentChange = ((q4Total - q3Total) / q3Total * 100).toFixed(1);
+
+          // Format data for a clear line chart comparison
+          chartConfig = {
+            type: 'line',
+            title: `Q3 vs Q4 Revenue Performance (Q4 was ${percentChange}% ${q4Total > q3Total ? 'higher' : 'lower'})`,
+            data: q3q4Data.map(d => ({
+              ...d,
+              month: new Date(d.month).toLocaleDateString('en-US', { month: 'short' }),
+              quarter: new Date(d.month).getMonth() < 9 ? 'Q3' : 'Q4'
+            })),
+            xAxis: { dataKey: 'month', label: 'Month' },
+            yAxis: { dataKey: 'revenue', label: 'Revenue ($)' },
+            height: 400
+          };
+        } else {
+          // If specific quarters aren't clear, show full year with quarters highlighted
+          const monthlyData = chartSamples.monthlyTrend.data;
+          chartConfig = {
+            type: 'line',
+            title: 'Quarterly Revenue Comparison',
+            data: monthlyData.map(d => ({
+              ...d,
+              month: new Date(d.month).toLocaleDateString('en-US', { month: 'short' }),
+              quarter: `Q${Math.floor(new Date(d.month).getMonth() / 3) + 1}`
+            })),
+            xAxis: { dataKey: 'month', label: 'Month' },
+            yAxis: { dataKey: 'revenue', label: 'Revenue ($)' },
+            height: 400
+          };
+        }
+      } else if (query.includes('turnover') && query.includes('rate')) {
         // Calculate turnover rate (orders/revenue ratio) by category
         const turnoverData = datasetOverview.dimensions.categories.map((cat) => ({
           name: cat.name,
