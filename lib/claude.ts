@@ -64,24 +64,26 @@ interface ChatMessage {
 export async function createChatCompletion(messages: ChatMessage[], tools?: any[]) {
   const client = getAnthropicClient();
 
-  // Try Claude 3.5 Sonnet first, fall back to Claude 3 Sonnet if not available
+  // Try available models - most users only have access to Haiku and maybe Sonnet
   const models = [
-    'claude-3-5-sonnet-20240620',  // Claude 3.5 Sonnet (correct model ID)
-    'claude-3-opus-20240229',       // Claude 3 Opus (most capable)
-    'claude-3-sonnet-20240229',     // Claude 3 Sonnet (balanced)
-    'claude-3-haiku-20240307'       // Claude 3 Haiku (fastest, fallback)
+    'claude-3-sonnet-20240229',     // Claude 3 Sonnet (better than Haiku)
+    'claude-3-haiku-20240307'       // Claude 3 Haiku (most widely available)
   ];
+
+  // Uncomment these if you have a paid API plan:
+  // 'claude-3-5-sonnet-20241022',   // Latest Claude 3.5 Sonnet (requires paid plan)
+  // 'claude-3-opus-20240229',       // Claude 3 Opus (requires paid plan)
 
   for (const model of models) {
     try {
       console.log(`Attempting to use model: ${model}`);
 
       // Set temperature based on model - lower for better accuracy
-      let temperature = 0.3;
+      let temperature = 0.2;  // Default low temp for accuracy
       if (model.includes('haiku')) {
-        temperature = 0.5;  // Haiku needs slightly higher temp
-      } else if (model.includes('opus')) {
-        temperature = 0.2;  // Opus works best with very low temp for factual tasks
+        temperature = 0.3;  // Haiku still needs low temp for BI accuracy
+      } else if (model.includes('sonnet') && !model.includes('3-5')) {
+        temperature = 0.25;  // Claude 3 Sonnet works well with very low temp
       }
 
       const response = await client.messages.create({
