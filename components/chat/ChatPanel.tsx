@@ -47,12 +47,17 @@ export default function ChatPanel() {
 
       const data = await response.json();
 
+      // Check if we got an error response
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.message.content,
-        chartConfig: data.message.chartConfig,
-        sources: data.message.sources,
+        content: data.message?.content || 'No response received',
+        chartConfig: data.message?.chartConfig,
+        sources: data.message?.sources,
         timestamp: new Date(),
       };
 
