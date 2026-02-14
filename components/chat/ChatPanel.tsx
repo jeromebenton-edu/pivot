@@ -88,15 +88,86 @@ export default function ChatPanel() {
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <h2 className="text-2xl font-semibold mb-2">Welcome to Pivot</h2>
-            <p className="mb-4">Ask questions about your data in natural language.</p>
-            <div className="text-left max-w-md mx-auto space-y-2">
-              <p className="text-sm">Try asking:</p>
-              <ul className="text-sm list-disc list-inside space-y-1">
-                <li>What were our top selling categories last month?</li>
-                <li>Show me revenue trends over time</li>
-                <li>Compare sales between different regions</li>
-                <li>Which products have the highest conversion rate?</li>
-              </ul>
+            <p className="mb-6">Ask questions about your e-commerce data in natural language.</p>
+
+            <div className="bg-gray-50 rounded-lg p-6 max-w-4xl mx-auto mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">Dataset Overview</h3>
+              <div className="grid md:grid-cols-2 gap-6 text-left text-sm">
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">📊 Data Summary</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li><strong>Time Range:</strong> January - December 2024</li>
+                    <li><strong>Total Records:</strong> 2,000 transactions</li>
+                    <li><strong>Total Revenue:</strong> $393,744.62</li>
+                    <li><strong>Unique Customers:</strong> 500 users</li>
+                    <li><strong>Unique Products:</strong> 100 products</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">🏷️ Product Categories</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>Electronics ($91k revenue)</li>
+                    <li>Home & Garden ($77k revenue)</li>
+                    <li>Sports & Outdoors ($59k revenue)</li>
+                    <li>Toys & Games, Books, Clothing</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">🌍 Geographic Regions</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>Asia (188 orders, $114k revenue)</li>
+                    <li>Europe (207 orders, $100k revenue)</li>
+                    <li>North America (178 orders, $97k revenue)</li>
+                    <li>South America (136 orders, $83k revenue)</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">📈 Event Types</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li><strong>View:</strong> 663 product browsing events</li>
+                    <li><strong>Cart:</strong> 628 add to cart events</li>
+                    <li><strong>Purchase:</strong> 709 completed purchases</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-left max-w-2xl mx-auto space-y-3">
+              <p className="text-sm font-semibold">💡 Example Questions You Can Ask:</p>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-blue-600 mb-1">Revenue Analysis</p>
+                  <ul className="text-xs list-disc list-inside space-y-1">
+                    <li>What were our top selling categories last month?</li>
+                    <li>Show me revenue trends over time</li>
+                    <li>Compare Q3 vs Q4 performance</li>
+                  </ul>
+                </div>
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-green-600 mb-1">Regional Performance</p>
+                  <ul className="text-xs list-disc list-inside space-y-1">
+                    <li>Which region has the highest conversion rate?</li>
+                    <li>Compare sales between Asia and Europe</li>
+                    <li>Show me regional revenue breakdown</li>
+                  </ul>
+                </div>
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-purple-600 mb-1">Customer Behavior</p>
+                  <ul className="text-xs list-disc list-inside space-y-1">
+                    <li>What&apos;s the cart abandonment rate?</li>
+                    <li>Show me the customer purchase funnel</li>
+                    <li>Average order value by category</li>
+                  </ul>
+                </div>
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-orange-600 mb-1">Forecasting</p>
+                  <ul className="text-xs list-disc list-inside space-y-1">
+                    <li>Forecast revenue for next 3 months</li>
+                    <li>Predict Electronics sales trends</li>
+                    <li>Show seasonal patterns</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
