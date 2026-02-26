@@ -69,11 +69,12 @@ export async function createChatCompletion(messages: ChatMessage[], tools?: any[
 
   // Model priority for OpenAI - Enterprise tier should have access to all
   const models = [
-    'gpt-4o',              // Latest GPT-4 Omni model (best for most tasks)
-    'gpt-4-turbo',         // GPT-4 Turbo (excellent, cheaper than gpt-4)
-    'gpt-4-turbo-preview', // Preview version
+    'gpt-5.2',             // Latest GPT-5.2 model (most advanced)
+    'gpt-5',               // GPT-5 base model
+    'gpt-4o',              // GPT-4 Omni model
+    'gpt-4-turbo',         // GPT-4 Turbo
     'gpt-4',               // Original GPT-4
-    'gpt-3.5-turbo',       // Fallback (much cheaper but less capable)
+    'gpt-3.5-turbo',       // Fallback
   ];
 
   // Add system message at the beginning
