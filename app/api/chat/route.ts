@@ -228,7 +228,10 @@ export async function POST(req: NextRequest) {
     let forecastData = null;
 
     // Check for forecast keywords
-    const forecastKeywords = ['forecast', 'predict', 'sarima', 'arima', 'projection', 'future', 'next month', 'january 2025', 'estimate'];
+    const forecastKeywords = ['forecast', 'predict', 'sarima', 'arima', 'projection', 'future', 'next month',
+                              'january 2025', 'february 2025', 'march 2025', 'april 2025', 'may 2025', 'june 2025',
+                              'july 2025', 'august 2025', 'september 2025', 'october 2025', 'november 2025', 'december 2025',
+                              'estimate', '2025'];
     const shouldGenerateForecast = forecastKeywords.some(keyword =>
       latestUserMessage?.content.toLowerCase().includes(keyword)
     );
@@ -279,6 +282,27 @@ export async function POST(req: NextRequest) {
         else if (query.includes('q1') && query.includes('q2')) {
           months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
           steps = 6;
+        }
+        // Check for specific month mentions
+        else if (query.includes('february 2025')) {
+          months = ['2025-02'];
+          steps = 1;
+        }
+        else if (query.includes('march 2025')) {
+          months = ['2025-03'];
+          steps = 1;
+        }
+        else if (query.includes('april 2025')) {
+          months = ['2025-04'];
+          steps = 1;
+        }
+        else if (query.includes('may 2025')) {
+          months = ['2025-05'];
+          steps = 1;
+        }
+        else if (query.includes('june 2025')) {
+          months = ['2025-06'];
+          steps = 1;
         }
         // Default to January 2025 only
         else {
