@@ -88,9 +88,10 @@ export async function POST(req: NextRequest) {
 
       // Use the requested chart type, or bar chart for multi-month forecasts
       const useBarChart = chartType === 'bar' || (forecastSteps > 1 && chartData.filter(d => d.forecast !== null).length === chartData.length);
+      const finalChartType = useBarChart ? 'bar' as const : (chartType === 'line' ? 'line' as const : 'bar' as const);
 
       const chartConfig = {
-        type: (useBarChart ? 'bar' : chartType) as const,
+        type: finalChartType,
         title: `Revenue Forecast: ${monthNames[0]} - ${monthNames[monthNames.length - 1]}`,
         data: chartData,
         xAxis: { dataKey: 'month', label: 'Month' },

@@ -286,42 +286,42 @@ export async function POST(req: NextRequest) {
               months.push(month);
             }
           }
-        }
-        // Check for January-June pattern
-        else if (query.includes('january') && query.includes('june')) {
-          months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
-          steps = 6;
-        }
-        // Check for Q1/Q2 patterns
-        else if (query.includes('q1') && query.includes('q2')) {
-          months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
-          steps = 6;
-        }
-        // Check for specific month mentions
-        else if (query.includes('february 2025')) {
-          months = ['2025-02'];
-          steps = 1;
-        }
-        else if (query.includes('march 2025')) {
-          months = ['2025-03'];
-          steps = 1;
-        }
-        else if (query.includes('april 2025')) {
-          months = ['2025-04'];
-          steps = 1;
-        }
-        else if (query.includes('may 2025')) {
-          months = ['2025-05'];
-          steps = 1;
-        }
-        else if (query.includes('june 2025')) {
-          months = ['2025-06'];
-          steps = 1;
-        }
-        // Default to January 2025 only
-        else {
-          months = ['2025-01'];
-          steps = 1;
+          // Check for January-June pattern
+          else if (query.includes('january') && query.includes('june')) {
+            months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
+            steps = 6;
+          }
+          // Check for Q1/Q2 patterns
+          else if (query.includes('q1') && query.includes('q2')) {
+            months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
+            steps = 6;
+          }
+          // Check for specific month mentions
+          else if (query.includes('february 2025')) {
+            months = ['2025-02'];
+            steps = 1;
+          }
+          else if (query.includes('march 2025')) {
+            months = ['2025-03'];
+            steps = 1;
+          }
+          else if (query.includes('april 2025')) {
+            months = ['2025-04'];
+            steps = 1;
+          }
+          else if (query.includes('may 2025')) {
+            months = ['2025-05'];
+            steps = 1;
+          }
+          else if (query.includes('june 2025')) {
+            months = ['2025-06'];
+            steps = 1;
+          }
+          // Default to January 2025 only
+          else {
+            months = ['2025-01'];
+            steps = 1;
+          }
         }
 
         // Call the forecast API
