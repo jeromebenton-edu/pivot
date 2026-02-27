@@ -222,30 +222,35 @@ export async function addChunksToVectorStore(chunks: any[]) {
   if (chunksNeedingEmbeddings.length > 0) {
     console.log(`Generating ${chunksNeedingEmbeddings.length} new embeddings...`);
 
-    // In production with many chunks, use mock embeddings for initial load
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
-    const useQuickMode = isProduction && chunksNeedingEmbeddings.length > 100;
-
-    if (useQuickMode) {
-      console.log('Using quick mock embeddings for initial production load...');
-    }
-
+    // Always use real embeddings for better accuracy
     for (let i = 0; i < chunksNeedingEmbeddings.length; i += BATCH_SIZE) {
       const batch = chunksNeedingEmbeddings.slice(i, i + BATCH_SIZE);
+      console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(chunksNeedingEmbeddings.length / BATCH_SIZE)}...`);
 
-      if (!useQuickMode) {
-        console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(chunksNeedingEmbeddings.length / BATCH_SIZE)}...`);
+      // Use batch embedding API for better performance
+      const batchTexts = batch.map(({ chunk }) => chunk.content);
+      const { generateOpenAIEmbeddings } = await import('./openai-embeddings');
+
+      let batchEmbeddings: number[][];
+      try {
+        // Try to use OpenAI batch API
+        batchEmbeddings = await generateOpenAIEmbeddings(batchTexts);
+      } catch (error) {
+        console.log('Falling back to individual embeddings:', error);
+        // Fallback to individual embeddings
+        const promises = batchTexts.map(text => generateEmbedding(text));
+        batchEmbeddings = await Promise.all(promises);
       }
 
-      for (const { chunk } of batch) {
-        const contentHash = hashContent(chunk.content);
-        const cacheKey = `${chunk.id}_${contentHash}`;
+      // Create results with embeddings
+      const batchResults = batch.map(({ chunk }, index) => ({
+        chunk,
+        embedding: batchEmbeddings[index],
+        cacheKey: `${chunk.id}_${hashContent(chunk.content)}`
+      }));
 
-        // Use mock embeddings in production for initial load
-        const embedding = useQuickMode
-          ? generateMockEmbedding(chunk.content)
-          : await generateEmbedding(chunk.content);
-
+      // Add results to arrays
+      for (const { chunk, embedding, cacheKey } of batchResults) {
         cache[cacheKey] = embedding;
         cacheUpdated = true;
 
