@@ -182,6 +182,58 @@ export default function DynamicChart({ config }: DynamicChartProps) {
         );
 
       case 'bar':
+        // Check if this is a forecast chart (has both actual and forecast data)
+        const hasBarForecast = data.some(d => d.forecast !== undefined);
+
+        if (hasBarForecast) {
+          return (
+            <ResponsiveContainer width="100%" height={height}>
+              <BarChart data={data} margin={margin}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey={xAxis?.dataKey || 'month'} />
+                <YAxis
+                  label={yAxis?.label ? { value: yAxis.label, angle: -90, position: 'insideLeft' } : undefined}
+                />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload as Record<string, unknown>;
+                      return (
+                        <div className="bg-white p-2 border border-gray-200 rounded shadow">
+                          <p className="font-semibold">{label}</p>
+                          {data.actual !== null && data.actual !== undefined && (
+                            <p className="text-sm">Actual: ${(data.actual as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                          )}
+                          {data.forecast !== null && data.forecast !== undefined && (
+                            <>
+                              <p className="text-sm text-red-600">Forecast: ${(data.forecast as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                              {data.lowerBound !== null && data.upperBound !== null && (
+                                <p className="text-xs text-gray-500">95% CI: ${(data.lowerBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - ${(data.upperBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Legend />
+                <Bar
+                  dataKey="actual"
+                  fill={colors[0]}
+                  name="Historical"
+                />
+                <Bar
+                  dataKey="forecast"
+                  fill={colors[1] || '#EF4444'}
+                  name="Forecast"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          );
+        }
+
         return (
           <ResponsiveContainer width="100%" height={height}>
             <BarChart data={data} margin={margin}>
