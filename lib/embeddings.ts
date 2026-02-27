@@ -21,7 +21,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   // This ensures similar texts get similar embeddings
 
   const words = text.toLowerCase().split(/\s+/);
-  const embedding = new Array(384).fill(0); // Standard embedding size
+  const embedding = new Array(1536).fill(0); // Match OpenAI's embedding size
 
   // Define keyword weights for better semantic matching
   const keywordWeights: Record<string, number> = {
@@ -39,8 +39,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     }, 0);
 
     // Distribute word features across embedding dimensions with weight
-    for (let i = 0; i < 10 && (idx * 10 + i) < 384; i++) {
-      embedding[(hash + i) % 384] += weight / (idx + 1);
+    for (let i = 0; i < 10 && (idx * 10 + i) < 1536; i++) {
+      embedding[(Math.abs(hash) + i) % 1536] += weight / (idx + 1);
     }
   });
 
