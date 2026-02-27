@@ -9,7 +9,7 @@ interface MonthlyData {
 
 export async function POST(req: NextRequest) {
   try {
-    const { targetMonth = '2025-01', steps = 1, months } = await req.json();
+    const { targetMonth = '2025-01', steps = 1, months, chartType = 'line' } = await req.json();
 
     // Extract monthly summary data from chunks
     const monthlyData: MonthlyData[] = [];
@@ -86,8 +86,11 @@ export async function POST(req: NextRequest) {
         }))
       ];
 
+      // Use the requested chart type, or bar chart for multi-month forecasts
+      const useBarChart = chartType === 'bar' || (forecastSteps > 1 && chartData.filter(d => d.forecast !== null).length === chartData.length);
+
       const chartConfig = {
-        type: 'line' as const,
+        type: (useBarChart ? 'bar' : chartType) as const,
         title: `Revenue Forecast: ${monthNames[0]} - ${monthNames[monthNames.length - 1]}`,
         data: chartData,
         xAxis: { dataKey: 'month', label: 'Month' },

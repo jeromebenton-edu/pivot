@@ -255,22 +255,36 @@ export async function POST(req: NextRequest) {
         let steps = 1;
         let months: string[] | undefined;
 
-        // Check for "next X months" or "six months" patterns first
-        const nextMonthsMatch = query.match(/(?:next\s+)?(\d+|six|three|four|five|seven|eight|nine|ten|eleven|twelve)\s+month/);
-        const numberWords: { [key: string]: number } = {
-          'three': 3, 'four': 4, 'five': 5, 'six': 6,
-          'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-          'eleven': 11, 'twelve': 12
-        };
-
-        if (nextMonthsMatch) {
-          const matchText = nextMonthsMatch[1];
-          steps = numberWords[matchText] || parseInt(matchText) || 6;
-          steps = Math.min(steps, 12); // Cap at 12 months
+        // Check for requests for all of 2025 or monthly forecast
+        if (query.includes('monthly forecast') && query.includes('2025') ||
+            query.includes('plot') && query.includes('monthly') && query.includes('2025') ||
+            query.includes('all months') && query.includes('2025')) {
+          // Generate all 12 months of 2025
           months = [];
-          for (let i = 0; i < steps; i++) {
-            const month = i < 9 ? `2025-0${i + 1}` : `2025-${i + 1}`;
+          for (let i = 1; i <= 12; i++) {
+            const month = i < 10 ? `2025-0${i}` : `2025-${i}`;
             months.push(month);
+          }
+          steps = 12;
+        }
+        // Check for "next X months" or "six months" patterns
+        else {
+          const nextMonthsMatch = query.match(/(?:next\s+)?(\d+|six|three|four|five|seven|eight|nine|ten|eleven|twelve)\s+month/);
+          const numberWords: { [key: string]: number } = {
+            'three': 3, 'four': 4, 'five': 5, 'six': 6,
+            'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+            'eleven': 11, 'twelve': 12
+          };
+
+          if (nextMonthsMatch) {
+            const matchText = nextMonthsMatch[1];
+            steps = numberWords[matchText] || parseInt(matchText) || 6;
+            steps = Math.min(steps, 12); // Cap at 12 months
+            months = [];
+            for (let i = 0; i < steps; i++) {
+              const month = i < 9 ? `2025-0${i + 1}` : `2025-${i + 1}`;
+              months.push(month);
+            }
           }
         }
         // Check for January-June pattern
@@ -312,13 +326,17 @@ export async function POST(req: NextRequest) {
 
         // Call the forecast API
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.headers.get('origin') || 'http://localhost:3000';
+        // Check if user wants a bar chart (used "plot" keyword)
+        const wantsBarChart = query.includes('plot') || query.includes('bar chart');
+
         const forecastResponse = await fetch(`${baseUrl}/api/forecast`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             targetMonth: months[0],
             steps,
-            months
+            months,
+            chartType: wantsBarChart ? 'bar' : 'line'
           })
         });
 
