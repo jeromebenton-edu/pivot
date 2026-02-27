@@ -1,5 +1,7 @@
 import { ChromaClient, Collection } from 'chromadb';
 import { generateEmbedding, cosineSimilarity } from './embeddings';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // For development, we'll use an in-memory store
 // In production, this would connect to Chroma Cloud
@@ -45,11 +47,22 @@ class InMemoryVectorStore {
       });
     }
 
-    // Calculate similarities
-    const similarities = filteredDocs.map(doc => ({
-      ...doc,
-      similarity: cosineSimilarity(queryEmbedding, doc.embedding)
-    }));
+    // Calculate similarities with boost for summary chunks
+    const similarities = filteredDocs.map(doc => {
+      let baseSimilarity = cosineSimilarity(queryEmbedding, doc.embedding);
+
+      // Boost score for summary chunks (monthly, category, regional summaries)
+      if (doc.metadata?.type === 'monthly_summary') {
+        baseSimilarity *= 1.5; // 50% boost for monthly summaries
+      } else if (doc.metadata?.type === 'category_summary' || doc.metadata?.type === 'regional_summary') {
+        baseSimilarity *= 1.3; // 30% boost for category/regional summaries
+      }
+
+      return {
+        ...doc,
+        similarity: Math.min(baseSimilarity, 1.0) // Cap at 1.0
+      };
+    });
 
     // Sort by similarity and return top N
     similarities.sort((a, b) => b.similarity - a.similarity);
@@ -90,6 +103,42 @@ export async function getVectorStore() {
   return vectorStore!;
 }
 
+// Cache file path for embeddings
+const EMBEDDINGS_CACHE_FILE = path.join(process.cwd(), '.embeddings-cache.json');
+
+// Load cached embeddings if they exist
+async function loadCachedEmbeddings(): Promise<Record<string, number[]>> {
+  try {
+    if (fs.existsSync(EMBEDDINGS_CACHE_FILE)) {
+      const data = fs.readFileSync(EMBEDDINGS_CACHE_FILE, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.log('Could not load embedding cache:', error);
+  }
+  return {};
+}
+
+// Save embeddings to cache
+async function saveCachedEmbeddings(cache: Record<string, number[]>): Promise<void> {
+  try {
+    fs.writeFileSync(EMBEDDINGS_CACHE_FILE, JSON.stringify(cache));
+  } catch (error) {
+    console.error('Could not save embedding cache:', error);
+  }
+}
+
+// Create a hash of content to detect changes
+function hashContent(content: string): string {
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString();
+}
+
 // Add chunks to the vector store
 export async function addChunksToVectorStore(chunks: any[]) {
   const store = await getVectorStore();
@@ -99,13 +148,39 @@ export async function addChunksToVectorStore(chunks: any[]) {
   const metadatas: any[] = [];
   const documents: string[] = [];
 
-  // Generate embeddings for all chunks
+  console.log(`Processing ${chunks.length} chunks with cached embeddings...`);
+
+  // Load existing cache
+  const cache = await loadCachedEmbeddings();
+  let cacheUpdated = false;
+
+  // Generate embeddings for all chunks (with caching)
   for (const chunk of chunks) {
-    const embedding = await generateEmbedding(chunk.content);
+    const contentHash = hashContent(chunk.content);
+    const cacheKey = `${chunk.id}_${contentHash}`;
+
+    let embedding: number[];
+
+    if (cache[cacheKey]) {
+      // Use cached embedding
+      embedding = cache[cacheKey];
+    } else {
+      // Generate new embedding and cache it
+      embedding = await generateEmbedding(chunk.content);
+      cache[cacheKey] = embedding;
+      cacheUpdated = true;
+    }
+
     ids.push(chunk.id);
     embeddings.push(embedding);
     metadatas.push(chunk.metadata || {});
     documents.push(chunk.content);
+  }
+
+  // Save updated cache if we generated new embeddings
+  if (cacheUpdated) {
+    await saveCachedEmbeddings(cache);
+    console.log('Updated embedding cache');
   }
 
   await store.addDocuments(ids, embeddings, metadatas, documents);
@@ -125,8 +200,20 @@ export async function searchChunks(
 }>> {
   const store = await getVectorStore();
 
-  // Generate embedding for the query
-  const queryEmbedding = await generateEmbedding(query);
+  // Load cache and check for query embedding
+  const cache = await loadCachedEmbeddings();
+  const queryHash = hashContent(query);
+  const queryCacheKey = `query_${queryHash}`;
+
+  let queryEmbedding: number[];
+  if (cache[queryCacheKey]) {
+    queryEmbedding = cache[queryCacheKey];
+  } else {
+    // Generate embedding for the query and cache it
+    queryEmbedding = await generateEmbedding(query);
+    cache[queryCacheKey] = queryEmbedding;
+    await saveCachedEmbeddings(cache);
+  }
 
   // Search the vector store
   const results = await store.query(queryEmbedding, limit, filters);

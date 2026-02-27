@@ -20,6 +20,7 @@ npm run build     # Ensure the project builds
 - Prefer composition over inheritance
 
 ## Testing Guidelines
+- **IMPORTANT**: Before asking the user to try loading a page or testing a feature, test it yourself first using curl or similar tools to check for errors. This saves both you and the user time
 - Write tests for new features when possible
 - Run existing tests before committing: `npm test`
 - Ensure all tests pass before marking work as complete

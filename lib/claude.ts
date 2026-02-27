@@ -23,10 +23,10 @@ CRITICAL: You must ONLY use the actual data provided in the knowledge base. DO N
 
 The dataset contains:
 - Time period: January - December 2024
-- Total revenue: $393,744.62
-- 2,000 transactions: 663 views, 628 cart adds, 709 completed purchases
+- Total revenue: $1,021,548.54
+- 6,375 transactions: 663 views, 628 cart adds, 986 completed purchases
 - Cart abandonment rate: 68.5% (industry standard, as some purchases bypass cart)
-- 4 regions: Asia ($114k, 188 orders), Europe ($100k, 207 orders), North America ($97k, 178 orders), South America ($83k, 136 orders)
+- 4 regions: North America ($339k, 350 orders), Europe ($335k, 282 orders), Asia Pacific ($225k, 223 orders), Latin America ($96k, 94 orders), Middle East & Africa ($26k, 37 orders)
 - 6 categories: Electronics, Home & Garden, Sports & Outdoors, Toys & Games, Books, Clothing
 
 When answering questions:
@@ -64,26 +64,29 @@ interface ChatMessage {
 export async function createChatCompletion(messages: ChatMessage[], tools?: any[]) {
   const client = getAnthropicClient();
 
-  // Try available models - most users only have access to Haiku and maybe Sonnet
+  // Currently only base Haiku is available - optimize for this model
   const models = [
-    'claude-3-sonnet-20240229',     // Claude 3 Sonnet (better than Haiku)
-    'claude-3-haiku-20240307'       // Claude 3 Haiku (most widely available)
+    'claude-3-haiku-20240307'       // Claude 3 Haiku (currently only available model)
   ];
 
-  // Uncomment these if you have a paid API plan:
-  // 'claude-3-5-sonnet-20241022',   // Latest Claude 3.5 Sonnet (requires paid plan)
-  // 'claude-3-opus-20240229',       // Claude 3 Opus (requires paid plan)
+  // Note: Tier 2+ models will be available once API key permissions are updated
+  // Future models to add when available:
+  // 'claude-3-5-sonnet-20241022'  - Latest Sonnet (Tier 2+)
+  // 'claude-3-sonnet-20240229'    - Claude 3 Sonnet (Tier 2+)
+  // 'claude-3-opus-20240229'      - Opus (Tier 3+)
 
   for (const model of models) {
     try {
       console.log(`Attempting to use model: ${model}`);
 
       // Set temperature based on model - lower for better accuracy
-      let temperature = 0.2;  // Default low temp for accuracy
+      let temperature = 0.1;  // Very low temp for BI accuracy with newer models
       if (model.includes('haiku')) {
-        temperature = 0.3;  // Haiku still needs low temp for BI accuracy
-      } else if (model.includes('sonnet') && !model.includes('3-5')) {
-        temperature = 0.25;  // Claude 3 Sonnet works well with very low temp
+        temperature = 0.2;  // Haiku benefits from slightly higher temp
+      } else if (model.includes('3-5-sonnet')) {
+        temperature = 0.1;  // Claude 3.5 Sonnet excels with very low temp for data accuracy
+      } else if (model.includes('sonnet')) {
+        temperature = 0.15;  // Claude 3 Sonnet also works well with low temp
       }
 
       const response = await client.messages.create({

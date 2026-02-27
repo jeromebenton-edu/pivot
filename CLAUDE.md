@@ -1,7 +1,27 @@
 # Claude Code Memory - Pivot Project
 
+## IMPORTANT REMINDERS FOR CLAUDE
+1. **ALWAYS test URLs yourself before asking the user to test them** - Use curl or fetch to verify pages/APIs work
+2. **Use .env file, NOT .env.local** - User prefers single .env file for environment variables
+3. **Test before telling** - Saves time and tokens for both parties
+
 ## Project Overview
 Business Intelligence chat application with RAG (Retrieval-Augmented Generation) for analyzing e-commerce data from 2024.
+
+## Recent Work - Feb 26, 2026
+
+### Fixed Page Jumping Issue
+- **Problem**: Page was jumping between top and bottom every millisecond on load
+- **Cause**: Aggressive auto-scroll on every render + auto-focus on mount
+- **Solution**:
+  - Only scroll when messages array actually grows
+  - Disabled auto-focus on initial page load
+  - Auto-focus only activates after first message sent
+
+### Current LLM Configuration
+- **Primary**: OpenAI GPT-4o (best available model)
+- **Fallback**: Claude 3 Haiku (Anthropic Tier 2 only has Haiku access)
+- **Note**: App auto-selects OpenAI if OPENAI_API_KEY is present in .env
 
 ## Recent Work - OpenAI Integration (Feb 14, 2026)
 
@@ -60,7 +80,7 @@ npm run build
 ```
 
 ### Environment Variables
-Required in `.env.local`:
+Required in `.env` (NOT .env.local):
 ```
 # Choose one or both:
 OPENAI_API_KEY=your-enterprise-key-here

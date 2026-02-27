@@ -8,16 +8,32 @@ import InputBar from './InputBar';
 export default function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
   };
 
+  // Only scroll when a new message is added
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+    // Only scroll when messages array grows (new message added)
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length]);
+
+  const handleExampleClick = (question: string) => {
+    // Set the input value and immediately send the message
+    setInputValue(question);
+    // Small delay to ensure UI updates before sending
+    setTimeout(() => {
+      handleSendMessage(question);
+    }, 50);
+  };
 
   const handleSendMessage = async (content: string) => {
     const userMessage: Message = {
@@ -28,6 +44,7 @@ export default function ChatPanel() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    setInputValue(''); // Clear the input after sending
     setIsLoading(true);
 
     try {
@@ -102,8 +119,8 @@ export default function ChatPanel() {
                   <h4 className="font-semibold text-gray-800 mb-2">📊 Data Summary</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li><strong>Time Range:</strong> January - December 2024</li>
-                    <li><strong>Total Records:</strong> 2,000 transactions</li>
-                    <li><strong>Total Revenue:</strong> $393,744.62</li>
+                    <li><strong>Total Records:</strong> 1,033 transactions</li>
+                    <li><strong>Total Revenue:</strong> $1,053,931.91</li>
                     <li><strong>Unique Customers:</strong> 500 users</li>
                     <li><strong>Unique Products:</strong> 100 products</li>
                   </ul>
@@ -111,10 +128,12 @@ export default function ChatPanel() {
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-2">🏷️ Product Categories</h4>
                   <ul className="space-y-1 text-gray-600">
-                    <li>Electronics ($91k revenue)</li>
-                    <li>Home & Garden ($77k revenue)</li>
-                    <li>Sports & Outdoors ($59k revenue)</li>
-                    <li>Toys & Games, Books, Clothing</li>
+                    <li>Electronics ($252k revenue)</li>
+                    <li>Home & Garden ($187k revenue)</li>
+                    <li>Clothing ($170k revenue)</li>
+                    <li>Sports & Outdoors ($163k revenue)</li>
+                    <li>Toys & Games ($158k revenue)</li>
+                    <li>Books ($124k revenue)</li>
                   </ul>
                 </div>
                 <div>
@@ -131,7 +150,7 @@ export default function ChatPanel() {
                   <ul className="space-y-1 text-gray-600">
                     <li><strong>View:</strong> 663 product browsing events</li>
                     <li><strong>Cart:</strong> 628 add to cart events</li>
-                    <li><strong>Purchase:</strong> 709 completed purchases</li>
+                    <li><strong>Purchase:</strong> 986 completed purchases</li>
                   </ul>
                 </div>
               </div>
@@ -142,34 +161,34 @@ export default function ChatPanel() {
               <div className="grid md:grid-cols-2 gap-3">
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <p className="text-xs font-semibold text-blue-600 mb-1">Revenue Analysis</p>
-                  <ul className="text-xs list-disc list-inside space-y-1">
-                    <li>What were our top selling categories last month?</li>
-                    <li>Show me revenue trends over time</li>
-                    <li>Compare Q3 vs Q4 performance</li>
+                  <ul className="text-xs space-y-1">
+                    <li className="cursor-pointer hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What were the top selling categories in December 2024?')}>• What were the top selling categories in December 2024?</li>
+                    <li className="cursor-pointer hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me monthly revenue for 2024')}>• Show me monthly revenue for 2024</li>
+                    <li className="cursor-pointer hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare Q3 vs Q4 performance')}>• Compare Q3 vs Q4 performance</li>
                   </ul>
                 </div>
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <p className="text-xs font-semibold text-green-600 mb-1">Regional Performance</p>
-                  <ul className="text-xs list-disc list-inside space-y-1">
-                    <li>Which region has the highest conversion rate?</li>
-                    <li>Compare sales between Asia and Europe</li>
-                    <li>Show me regional revenue breakdown</li>
+                  <ul className="text-xs space-y-1">
+                    <li className="cursor-pointer hover:text-green-700 hover:bg-green-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Which region has the highest conversion rate?')}>• Which region has the highest conversion rate?</li>
+                    <li className="cursor-pointer hover:text-green-700 hover:bg-green-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare sales between North America and Europe')}>• Compare sales between North America and Europe</li>
+                    <li className="cursor-pointer hover:text-green-700 hover:bg-green-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me regional revenue breakdown')}>• Show me regional revenue breakdown</li>
                   </ul>
                 </div>
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <p className="text-xs font-semibold text-purple-600 mb-1">Customer Behavior</p>
-                  <ul className="text-xs list-disc list-inside space-y-1">
-                    <li>What&apos;s the cart abandonment rate?</li>
-                    <li>Show me the customer purchase funnel</li>
-                    <li>Average order value by category</li>
+                  <ul className="text-xs space-y-1">
+                    <li className="cursor-pointer hover:text-purple-700 hover:bg-purple-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What\'s the cart abandonment rate?')}>• What&apos;s the cart abandonment rate?</li>
+                    <li className="cursor-pointer hover:text-purple-700 hover:bg-purple-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me the customer purchase funnel')}>• Show me the customer purchase funnel</li>
+                    <li className="cursor-pointer hover:text-purple-700 hover:bg-purple-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Average order value by category')}>• Average order value by category</li>
                   </ul>
                 </div>
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <p className="text-xs font-semibold text-orange-600 mb-1">Forecasting</p>
-                  <ul className="text-xs list-disc list-inside space-y-1">
-                    <li>Forecast revenue for next 3 months</li>
-                    <li>Predict Electronics sales trends</li>
-                    <li>Show seasonal patterns</li>
+                  <ul className="text-xs space-y-1">
+                    <li className="cursor-pointer hover:text-orange-700 hover:bg-orange-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What was the highest revenue month in 2024?')}>• What was the highest revenue month in 2024?</li>
+                    <li className="cursor-pointer hover:text-orange-700 hover:bg-orange-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me Electronics category performance')}>• Show me Electronics category performance</li>
+                    <li className="cursor-pointer hover:text-orange-700 hover:bg-orange-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare Q1 vs Q4 2024 revenue')}>• Compare Q1 vs Q4 2024 revenue</li>
                   </ul>
                 </div>
               </div>
@@ -182,18 +201,31 @@ export default function ChatPanel() {
         )}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg p-3 max-w-xs">
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+            <div className="bg-gray-100 rounded-lg p-4 max-w-md">
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                <div className="text-sm text-gray-600 animate-pulse">
+                  Searching knowledge base and analyzing data...
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-gray-500">
+                This typically takes 3-8 seconds
               </div>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
-      <InputBar onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <InputBar
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+        value={inputValue}
+        onChange={setInputValue}
+      />
     </div>
   );
 }

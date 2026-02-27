@@ -5,33 +5,44 @@ import React, { useState, FormEvent, KeyboardEvent, useRef, useEffect } from 're
 interface InputBarProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-export default function InputBar({ onSendMessage, isLoading }: InputBarProps) {
+export default function InputBar({ onSendMessage, isLoading, value, onChange }: InputBarProps) {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-focus on mount and when loading completes
+  // Use external value if provided, otherwise use internal state
+  const inputValue = value !== undefined ? value : input;
+  const setInputValue = onChange || setInput;
+
+  // Only auto-focus after sending a message (when loading completes)
+  const [hasInteracted, setHasInteracted] = useState(false);
+
   useEffect(() => {
-    if (!isLoading) {
+    // Only auto-focus if user has already interacted (sent a message)
+    if (!isLoading && hasInteracted) {
       inputRef.current?.focus();
     }
-  }, [isLoading]);
+  }, [isLoading, hasInteracted]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (input.trim() && !isLoading) {
-      onSendMessage(input.trim());
-      setInput('');
+    if (inputValue.trim() && !isLoading) {
+      setHasInteracted(true);
+      onSendMessage(inputValue.trim());
+      setInputValue('');
     }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (input.trim() && !isLoading) {
-        onSendMessage(input.trim());
-        setInput('');
+      if (inputValue.trim() && !isLoading) {
+        setHasInteracted(true);
+        onSendMessage(inputValue.trim());
+        setInputValue('');
       }
     }
   };
@@ -41,11 +52,15 @@ export default function InputBar({ onSendMessage, isLoading }: InputBarProps) {
       <div className="flex space-x-2">
         <textarea
           ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask a question about your data..."
-          className="flex-1 resize-none rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] max-h-32"
+          placeholder={isLoading ? "Processing your request..." : "Ask a question about your data..."}
+          className={`flex-1 resize-none rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] max-h-32 transition-all ${
+            isLoading
+              ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-wait'
+              : 'border-gray-300 bg-white'
+          }`}
           rows={1}
           disabled={isLoading}
           autoFocus
@@ -54,7 +69,7 @@ export default function InputBar({ onSendMessage, isLoading }: InputBarProps) {
         />
         <button
           type="submit"
-          disabled={!input.trim() || isLoading}
+          disabled={!inputValue.trim() || isLoading}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           aria-label={isLoading ? "Sending message..." : "Send message"}
         >

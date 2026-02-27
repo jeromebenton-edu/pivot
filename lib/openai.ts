@@ -26,10 +26,10 @@ CRITICAL: You must ONLY use the actual data provided in the knowledge base. DO N
 
 The dataset contains:
 - Time period: January - December 2024
-- Total revenue: $393,744.62
-- 2,000 transactions: 663 views, 628 cart adds, 709 completed purchases
+- Total revenue: $1,021,548.54
+- 6,375 transactions: 663 views, 628 cart adds, 986 completed purchases
 - Cart abandonment rate: 68.5% (industry standard, as some purchases bypass cart)
-- 4 regions: Asia ($114k, 188 orders), Europe ($100k, 207 orders), North America ($97k, 178 orders), South America ($83k, 136 orders)
+- 4 regions: North America ($339k, 350 orders), Europe ($335k, 282 orders), Asia Pacific ($225k, 223 orders), Latin America ($96k, 94 orders), Middle East & Africa ($26k, 37 orders)
 - 6 categories: Electronics, Home & Garden, Sports & Outdoors, Toys & Games, Books, Clothing
 
 When answering questions:
@@ -67,12 +67,10 @@ interface ChatMessage {
 export async function createChatCompletion(messages: ChatMessage[], tools?: any[]) {
   const client = getOpenAIClient();
 
-  // Model priority for OpenAI - Enterprise tier should have access to all
+  // Model priority for OpenAI - using best available models
   const models = [
-    'gpt-5.2',             // Latest GPT-5.2 model (most advanced)
-    'gpt-5',               // GPT-5 base model
-    'gpt-4o',              // GPT-4 Omni model
-    'gpt-4-turbo',         // GPT-4 Turbo
+    'gpt-4o',              // GPT-4 Omni model (best available)
+    'gpt-4-turbo',         // GPT-4 Turbo (excellent alternative)
     'gpt-4',               // Original GPT-4
     'gpt-3.5-turbo',       // Fallback
   ];

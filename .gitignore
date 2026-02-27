@@ -56,3 +56,6 @@ __pycache__/
 # Documents
 *.docx
 *.pdf
+
+# Embeddings cache
+.embeddings-cache.json

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "P001",
+    "name": "MacBook Pro 14\"",
+    "category": "Electronics",
+    "price": 1999,
+    "weight": 0.8
+  },
+  {
+    "id": "P002",
+    "name": "iPhone 15 Pro",
+    "category": "Electronics",
+    "price": 1199,
+    "weight": 0.9
+  },
+  {
+    "id": "P003",
+    "name": "iPad Air",
+    "category": "Electronics",
+    "price": 799,
+    "weight": 0.7
+  },
+  {
+    "id": "P004",
+    "name": "AirPods Pro",
+    "category": "Electronics",
+    "price": 249,
+    "weight": 0.5
+  },
+  {
+    "id": "P005",
+    "name": "Sony WH-1000XM5",
+    "category": "Electronics",
+    "price": 399,
+    "weight": 0.6
+  },
+  {
+    "id": "P006",
+    "name": "Samsung 65\" OLED TV",
+    "category": "Electronics",
+    "price": 2499,
+    "weight": 0.4
+  },
+  {
+    "id": "P007",
+    "name": "PlayStation 5",
+    "category": "Electronics",
+    "price": 499,
+    "weight": 0.7
+  },
+  {
+    "id": "P008",
+    "name": "Meta Quest 3",
+    "category": "Electronics",
+    "price": 649,
+    "weight": 0.5
+  },
+  {
+    "id": "P009",
+    "name": "Nike Air Max",
+    "category": "Fashion",
+    "price": 179,
+    "weight": 1.2
+  },
+  {
+    "id": "P010",
+    "name": "Levi's 501 Jeans",
+    "category": "Fashion",
+    "price": 98,
+    "weight": 1.1
+  },
+  {
+    "id": "P011",
+    "name": "North Face Jacket",
+    "category": "Fashion",
+    "price": 299,
+    "weight": 0.9
+  },
+  {
+    "id": "P012",
+    "name": "Ray-Ban Wayfarers",
+    "category": "Fashion",
+    "price": 168,
+    "weight": 0.8
+  },
+  {
+    "id": "P013",
+    "name": "Adidas Ultraboost",
+    "category": "Fashion",
+    "price": 189,
+    "weight": 1
+  },
+  {
+    "id": "P014",
+    "name": "Patagonia Backpack",
+    "category": "Fashion",
+    "price": 149,
+    "weight": 0.7
+  },
+  {
+    "id": "P015",
+    "name": "Dyson V15 Vacuum",
+    "category": "Home & Garden",
+    "price": 749,
+    "weight": 0.6
+  },
+  {
+    "id": "P016",
+    "name": "Nespresso Machine",
+    "category": "Home & Garden",
+    "price": 299,
+    "weight": 0.8
+  },
+  {
+    "id": "P017",
+    "name": "Instant Pot Duo",
+    "category": "Home & Garden",
+    "price": 129,
+    "weight": 0.9
+  },
+  {
+    "id": "P018",
+    "name": "Philips Hue Starter Kit",
+    "category": "Home & Garden",
+    "price": 199,
+    "weight": 0.7
+  },
+  {
+    "id": "P019",
+    "name": "Weber Grill",
+    "category": "Home & Garden",
+    "price": 899,
+    "weight": 0.5
+  },
+  {
+    "id": "P020",
+    "name": "KitchenAid Mixer",
+    "category": "Home & Garden",
+    "price": 449,
+    "weight": 0.7
+  },
+  {
+    "id": "P021",
+    "name": "Peloton Bike",
+    "category": "Health & Wellness",
+    "price": 1895,
+    "weight": 0.3
+  },
+  {
+    "id": "P022",
+    "name": "Apple Watch Series 9",
+    "category": "Health & Wellness",
+    "price": 429,
+    "weight": 0.8
+  },
+  {
+    "id": "P023",
+    "name": "Theragun Prime",
+    "category": "Health & Wellness",
+    "price": 299,
+    "weight": 0.6
+  },
+  {
+    "id": "P024",
+    "name": "Yoga Mat Premium",
+    "category": "Health & Wellness",
+    "price": 89,
+    "weight": 0.9
+  },
+  {
+    "id": "P025",
+    "name": "Vitamix Blender",
+    "category": "Health & Wellness",
+    "price": 599,
+    "weight": 0.5
+  },
+  {
+    "id": "P026",
+    "name": "Kindle Paperwhite",
+    "category": "Books & Media",
+    "price": 149,
+    "weight": 0.7
+  },
+  {
+    "id": "P027",
+    "name": "Bestseller Bundle",
+    "category": "Books & Media",
+    "price": 45,
+    "weight": 1.5
+  },
+  {
+    "id": "P028",
+    "name": "MasterClass Annual",
+    "category": "Books & Media",
+    "price": 180,
+    "weight": 0.6
+  },
+  {
+    "id": "P029",
+    "name": "Spotify Premium Gift",
+    "category": "Books & Media",
+    "price": 99,
+    "weight": 0.8
+  },
+  {
+    "id": "P030",
+    "name": "Audible Subscription",
+    "category": "Books & Media",
+    "price": 149,
+    "weight": 0.7
+  }
+]

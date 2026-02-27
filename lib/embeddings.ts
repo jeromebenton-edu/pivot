@@ -1,11 +1,22 @@
 /**
  * Embeddings service for generating vector representations of text
- * Uses Voyage AI in production, mock embeddings for development
+ * Uses OpenAI embeddings when available, mock embeddings as fallback
  */
 
-// Mock embedding function for development
-// In production, this would use Voyage AI
+import { generateOpenAIEmbedding } from './openai-embeddings';
+
+// Generate embedding using OpenAI or fallback to mock
 export async function generateEmbedding(text: string): Promise<number[]> {
+  // Try OpenAI embeddings first if API key is available
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      return await generateOpenAIEmbedding(text);
+    } catch (error) {
+      console.log('Falling back to mock embeddings:', error);
+    }
+  }
+
+  // Fallback to mock embedding
   // For development: generate a consistent mock embedding based on text content
   // This ensures similar texts get similar embeddings
 

@@ -1,0 +1,10 @@
+# Ignore large embeddings cache file - will be regenerated on server
+.embeddings-cache.json
+
+# Ignore development files
+.env.local
+*.log
+.DS_Store
+
+# Ignore scripts directory for deployment
+scripts/

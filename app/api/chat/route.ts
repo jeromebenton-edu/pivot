@@ -92,6 +92,60 @@ export async function POST(req: NextRequest) {
       let searchQuery = latestUserMessage.content;
       let searchLimit = 5;
 
+      // Enhance search for category/monthly queries
+      const categoryKeywords = ['category', 'categories', 'top selling', 'best selling', 'popular',
+                                'average order value', 'aov', 'order value'];
+      const specificCategories = ['electronics', 'home & garden', 'sports & outdoors',
+                                  'clothing', 'fashion', 'toys & games', 'books'];
+      const monthlyKeywords = ['january', 'february', 'march', 'april', 'may', 'june',
+                               'july', 'august', 'september', 'october', 'november', 'december',
+                               'month', 'monthly'];
+
+      const isAskingAboutCategories = categoryKeywords.some(keyword =>
+        latestUserMessage?.content.toLowerCase().includes(keyword)
+      );
+
+      const isAskingAboutSpecificCategory = specificCategories.some(category =>
+        latestUserMessage?.content.toLowerCase().includes(category)
+      );
+
+      const isAskingAboutMonth = monthlyKeywords.some(keyword =>
+        latestUserMessage?.content.toLowerCase().includes(keyword)
+      );
+
+      // Check for quarterly comparisons (Q1, Q2, Q3, Q4)
+      const quarterlyKeywords = ['q1', 'q2', 'q3', 'q4', 'quarter', 'quarterly'];
+      const isAskingAboutQuarters = quarterlyKeywords.some(keyword =>
+        latestUserMessage?.content.toLowerCase().includes(keyword)
+      );
+
+      if (isAskingAboutQuarters) {
+        // Looking for quarterly data - need at least 6-8 months for comparison
+        searchQuery = `monthly summary ${searchQuery} revenue quarter`;
+        searchLimit = 10; // Enough to get months from multiple quarters
+      } else if (isAskingAboutSpecificCategory && isAskingAboutMonth) {
+        // Looking for specific category monthly data - target our category-specific chunks
+        searchQuery = `${searchQuery} monthly revenue breakdown category performance`;
+        searchLimit = 15; // Further increase limit to ensure we get category-specific chunks
+      } else if (isAskingAboutCategories && isAskingAboutMonth) {
+        // Looking for monthly category data - prioritize monthly summaries
+        searchQuery = `monthly summary ${searchQuery} categories top category`;
+        searchLimit = 8;
+      } else if (isAskingAboutCategories) {
+        // Looking for category data - increase limit to get AOV chunks
+        searchQuery = `category ${searchQuery} average order value aov`;
+        searchLimit = 12;
+      } else if (isAskingAboutMonth) {
+        // Looking for monthly data
+        searchQuery = `monthly summary ${searchQuery}`;
+        // Check if asking for all months or yearly overview
+        if (searchQuery.toLowerCase().includes('2024') || searchQuery.toLowerCase().includes('year')) {
+          searchLimit = 15; // Get all 12 months plus some buffer
+        } else {
+          searchLimit = 7;
+        }
+      }
+
       if (isAskingForOverview) {
         // For overview requests, search for summary data
         searchQuery = 'monthly summary category summary region summary total revenue orders';
