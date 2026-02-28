@@ -39,10 +39,7 @@ yarn-error.log*
 .vercel
 
 # data pipeline
-/data/notebooks/*.ipynb_checkpoints
-/data/scripts/__pycache__
-/data/samples/*.csv
-/data/samples/*.xlsx
+/data/
 
 # typescript
 *.tsbuildinfo
