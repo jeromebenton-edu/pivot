@@ -39,7 +39,8 @@ yarn-error.log*
 .vercel
 
 # data pipeline
-/data/
+/data/*
+!/data/samples/
 
 # typescript
 *.tsbuildinfo

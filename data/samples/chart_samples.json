@@ -1,0 +1,140 @@
+{
+  "monthlyTrend": {
+    "type": "line",
+    "title": "Monthly Revenue Trend",
+    "data": [
+      {
+        "month": "2024-01",
+        "revenue": 39580.52
+      },
+      {
+        "month": "2024-02",
+        "revenue": 33189.33
+      },
+      {
+        "month": "2024-03",
+        "revenue": 30056.27
+      },
+      {
+        "month": "2024-04",
+        "revenue": 44570.15
+      },
+      {
+        "month": "2024-05",
+        "revenue": 33352.79
+      },
+      {
+        "month": "2024-06",
+        "revenue": 23697.93
+      },
+      {
+        "month": "2024-07",
+        "revenue": 28575.28
+      },
+      {
+        "month": "2024-08",
+        "revenue": 29641.31
+      },
+      {
+        "month": "2024-09",
+        "revenue": 42706.38
+      },
+      {
+        "month": "2024-10",
+        "revenue": 36942.35
+      },
+      {
+        "month": "2024-11",
+        "revenue": 28402.15
+      },
+      {
+        "month": "2024-12",
+        "revenue": 23030.16
+      }
+    ],
+    "xAxis": {
+      "dataKey": "month",
+      "label": "Month"
+    },
+    "yAxis": {
+      "dataKey": "revenue",
+      "label": "Revenue ($)"
+    }
+  },
+  "categoryBreakdown": {
+    "type": "bar",
+    "title": "Revenue by Category",
+    "data": [
+      {
+        "name": "Electronics",
+        "revenue": 193083.7199999999,
+        "orders": 99
+      },
+      {
+        "name": "Sports & Outdoors",
+        "revenue": 90021.36000000002,
+        "orders": 101
+      },
+      {
+        "name": "Home & Garden",
+        "revenue": 60984.619999999995,
+        "orders": 120
+      },
+      {
+        "name": "Clothing",
+        "revenue": 26840.239999999994,
+        "orders": 126
+      },
+      {
+        "name": "Toys & Games",
+        "revenue": 17312.42000000001,
+        "orders": 110
+      },
+      {
+        "name": "Books",
+        "revenue": 5502.26,
+        "orders": 103
+      }
+    ],
+    "xAxis": {
+      "dataKey": "name",
+      "label": "Category"
+    },
+    "yAxis": {
+      "dataKey": "revenue",
+      "label": "Revenue ($)"
+    }
+  },
+  "regionPie": {
+    "type": "pie",
+    "title": "Orders by Region",
+    "data": [
+      {
+        "name": "North America",
+        "revenue": 96616.85999999997,
+        "orders": 167
+      },
+      {
+        "name": "Asia",
+        "revenue": 114078.57000000005,
+        "orders": 176
+      },
+      {
+        "name": "South America",
+        "revenue": 82854.17999999996,
+        "orders": 154
+      },
+      {
+        "name": "Europe",
+        "revenue": 100195.01000000004,
+        "orders": 162
+      }
+    ],
+    "xAxis": {
+      "dataKey": "name"
+    },
+    "yAxis": {
+      "dataKey": "orders"
+    }
+  }
+}
