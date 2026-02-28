@@ -48,7 +48,7 @@ export default function InputBar({ onSendMessage, isLoading, value, onChange }: 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t p-4" role="form" aria-label="Chat input form">
+    <form onSubmit={handleSubmit} className="border-t border-gray-200 dark:border-gray-800 p-4" role="form" aria-label="Chat input form">
       <div className="flex space-x-2">
         <textarea
           ref={inputRef}
@@ -56,10 +56,10 @@ export default function InputBar({ onSendMessage, isLoading, value, onChange }: 
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={isLoading ? "Processing your request..." : "Ask a question about your data..."}
-          className={`flex-1 resize-none rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] max-h-32 transition-all ${
+          className={`flex-1 resize-none rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] max-h-32 transition-all dark:text-gray-100 dark:placeholder-gray-500 ${
             isLoading
-              ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-wait'
-              : 'border-gray-300 bg-white'
+              ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-wait'
+              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
           }`}
           rows={1}
           disabled={isLoading}
@@ -70,7 +70,7 @@ export default function InputBar({ onSendMessage, isLoading, value, onChange }: 
         <button
           type="submit"
           disabled={!inputValue.trim() || isLoading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
           aria-label={isLoading ? "Sending message..." : "Send message"}
         >
           {isLoading ? (

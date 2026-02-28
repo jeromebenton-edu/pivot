@@ -10,7 +10,7 @@ import remarkGfm from 'remark-gfm';
 const DynamicChart = dynamic(() => import('../charts/DynamicChart'), {
   ssr: false,
   loading: () => (
-    <div className="h-64 bg-gray-50 rounded flex items-center justify-center text-gray-400">
+    <div className="h-64 bg-gray-50 dark:bg-gray-800 rounded flex items-center justify-center text-gray-400 dark:text-gray-500">
       Loading chart...
     </div>
   )
@@ -29,7 +29,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         className={`max-w-3xl rounded-lg p-3 ${
           isUser
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 text-gray-900'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
         }`}
       >
         {isUser ? (
@@ -50,7 +50,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               h1: ({children}) => <h1 className="text-xl font-bold mb-2">{children}</h1>,
               h2: ({children}) => <h2 className="text-lg font-bold mb-2">{children}</h2>,
               h3: ({children}) => <h3 className="text-base font-bold mb-2">{children}</h3>,
-              blockquote: ({children}) => <blockquote className="border-l-4 border-gray-300 pl-3 italic">{children}</blockquote>,
+              blockquote: ({children}) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-3 italic">{children}</blockquote>,
             }}
             >
               {message.content}
@@ -59,7 +59,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {message.chartConfig && (
-          <div className="mt-3 -mx-3 -mb-3 p-3 bg-white rounded-b-lg">
+          <div className="mt-3 -mx-3 -mb-3 p-3 bg-white dark:bg-gray-900 rounded-b-lg">
             <DynamicChart config={message.chartConfig} />
           </div>
         )}
@@ -67,7 +67,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         {message.sources && message.sources.length > 0 && (
           <div className="mt-3 text-xs">
             <details className="cursor-pointer">
-              <summary className={`${isUser ? 'text-blue-200' : 'text-gray-500'}`}>
+              <summary className={`${isUser ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400'}`}>
                 {message.sources.length} sources
               </summary>
               <div className="mt-2 space-y-1">

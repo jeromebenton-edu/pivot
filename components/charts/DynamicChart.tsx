@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTheme } from 'next-themes';
 import {
   LineChart, Line,
   BarChart, Bar,
@@ -33,6 +34,17 @@ interface DynamicChartProps {
 const COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
 
 export default function DynamicChart({ config }: DynamicChartProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
+  const chartTheme = {
+    grid: isDark ? '#374151' : '#e5e7eb',
+    axis: isDark ? '#9ca3af' : '#6b7280',
+    tooltipBg: isDark ? '#1f2937' : '#ffffff',
+    tooltipBorder: isDark ? '#374151' : '#e5e7eb',
+    tooltipText: isDark ? '#f3f4f6' : '#111827',
+  };
+
   const {
     type,
     title,
@@ -47,8 +59,8 @@ export default function DynamicChart({ config }: DynamicChartProps) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded">
-        <p className="text-gray-500">No data available for chart</p>
+      <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded">
+        <p className="text-gray-500 dark:text-gray-400">No data available for chart</p>
       </div>
     );
   }
@@ -70,24 +82,24 @@ export default function DynamicChart({ config }: DynamicChartProps) {
                     <stop offset="95%" stopColor="#EF4444" stopOpacity={0.05}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey={xAxis?.dataKey || 'month'} />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                <XAxis dataKey={xAxis?.dataKey || 'month'} tick={{ fill: chartTheme.axis }} />
+                <YAxis tick={{ fill: chartTheme.axis }} />
                 <Tooltip
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload as Record<string, unknown>;
                       return (
-                        <div className="bg-white p-2 border border-gray-200 rounded shadow">
+                        <div style={{ background: chartTheme.tooltipBg, color: chartTheme.tooltipText, border: `1px solid ${chartTheme.tooltipBorder}` }} className="p-2 rounded shadow">
                           <p className="font-semibold">{label}</p>
                           {data.actual !== null && data.actual !== undefined && (
                             <p className="text-sm">Actual: ${(data.actual as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                           )}
                           {data.forecast !== null && data.forecast !== undefined && (
                             <>
-                              <p className="text-sm text-red-600">Forecast: ${(data.forecast as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                              <p className="text-sm text-red-600 dark:text-red-400">Forecast: ${(data.forecast as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                               {data.lowerBound !== null && data.upperBound !== null && (
-                                <p className="text-xs text-gray-500">95% CI: ${(data.lowerBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - ${(data.upperBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                <p className="text-xs" style={{ color: chartTheme.axis }}>95% CI: ${(data.lowerBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - ${(data.upperBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                               )}
                             </>
                           )}
@@ -97,7 +109,7 @@ export default function DynamicChart({ config }: DynamicChartProps) {
                     return null;
                   }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ color: chartTheme.axis }} />
 
                 {/* Confidence interval as area between bounds */}
                 <Area
@@ -166,11 +178,11 @@ export default function DynamicChart({ config }: DynamicChartProps) {
         return (
           <ResponsiveContainer width="100%" height={height}>
             <LineChart data={data} margin={margin}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={xAxis?.dataKey || 'name'} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+              <XAxis dataKey={xAxis?.dataKey || 'name'} tick={{ fill: chartTheme.axis }} />
+              <YAxis tick={{ fill: chartTheme.axis }} />
+              <Tooltip contentStyle={{ background: chartTheme.tooltipBg, border: `1px solid ${chartTheme.tooltipBorder}`, color: chartTheme.tooltipText }} />
+              <Legend wrapperStyle={{ color: chartTheme.axis }} />
               <Line
                 type="monotone"
                 dataKey={yAxis?.dataKey || series || 'value'}
@@ -189,26 +201,27 @@ export default function DynamicChart({ config }: DynamicChartProps) {
           return (
             <ResponsiveContainer width="100%" height={height}>
               <BarChart data={data} margin={margin}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey={xAxis?.dataKey || 'month'} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                <XAxis dataKey={xAxis?.dataKey || 'month'} tick={{ fill: chartTheme.axis }} />
                 <YAxis
-                  label={yAxis?.label ? { value: yAxis.label, angle: -90, position: 'insideLeft' } : undefined}
+                  tick={{ fill: chartTheme.axis }}
+                  label={yAxis?.label ? { value: yAxis.label, angle: -90, position: 'insideLeft', fill: chartTheme.axis } : undefined}
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload as Record<string, unknown>;
                       return (
-                        <div className="bg-white p-2 border border-gray-200 rounded shadow">
+                        <div style={{ background: chartTheme.tooltipBg, color: chartTheme.tooltipText, border: `1px solid ${chartTheme.tooltipBorder}` }} className="p-2 rounded shadow">
                           <p className="font-semibold">{label}</p>
                           {data.actual !== null && data.actual !== undefined && (
                             <p className="text-sm">Actual: ${(data.actual as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                           )}
                           {data.forecast !== null && data.forecast !== undefined && (
                             <>
-                              <p className="text-sm text-red-600">Forecast: ${(data.forecast as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                              <p className="text-sm text-red-600 dark:text-red-400">Forecast: ${(data.forecast as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                               {data.lowerBound !== null && data.upperBound !== null && (
-                                <p className="text-xs text-gray-500">95% CI: ${(data.lowerBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - ${(data.upperBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                <p className="text-xs" style={{ color: chartTheme.axis }}>95% CI: ${(data.lowerBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - ${(data.upperBound as number)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                               )}
                             </>
                           )}
@@ -218,7 +231,7 @@ export default function DynamicChart({ config }: DynamicChartProps) {
                     return null;
                   }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ color: chartTheme.axis }} />
                 <Bar
                   dataKey="actual"
                   fill={colors[0]}
@@ -237,12 +250,14 @@ export default function DynamicChart({ config }: DynamicChartProps) {
         return (
           <ResponsiveContainer width="100%" height={height}>
             <BarChart data={data} margin={margin}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={xAxis?.dataKey || 'name'} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+              <XAxis dataKey={xAxis?.dataKey || 'name'} tick={{ fill: chartTheme.axis }} />
               <YAxis
-                label={yAxis?.label ? { value: yAxis.label, angle: -90, position: 'insideLeft' } : undefined}
+                tick={{ fill: chartTheme.axis }}
+                label={yAxis?.label ? { value: yAxis.label, angle: -90, position: 'insideLeft', fill: chartTheme.axis } : undefined}
               />
               <Tooltip
+                contentStyle={{ background: chartTheme.tooltipBg, border: `1px solid ${chartTheme.tooltipBorder}`, color: chartTheme.tooltipText }}
                 formatter={(value: unknown, name?: string) => {
                   if (name === 'turnoverRate') {
                     return [`${value} orders/$1k`, 'Turnover Rate'];
@@ -253,7 +268,7 @@ export default function DynamicChart({ config }: DynamicChartProps) {
                   return [String(value), name || ''];
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ color: chartTheme.axis }} />
               <Bar
                 dataKey={yAxis?.dataKey || series || 'value'}
                 fill={colors[0]}
@@ -280,8 +295,8 @@ export default function DynamicChart({ config }: DynamicChartProps) {
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip contentStyle={{ background: chartTheme.tooltipBg, border: `1px solid ${chartTheme.tooltipBorder}`, color: chartTheme.tooltipText }} />
+              <Legend wrapperStyle={{ color: chartTheme.axis }} />
             </PieChart>
           </ResponsiveContainer>
         );
@@ -290,10 +305,10 @@ export default function DynamicChart({ config }: DynamicChartProps) {
         return (
           <ResponsiveContainer width="100%" height={height}>
             <ScatterChart margin={margin}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={xAxis?.dataKey || 'x'} name={xAxis?.label || 'X'} />
-              <YAxis dataKey={yAxis?.dataKey || 'y'} name={yAxis?.label || 'Y'} />
-              <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+              <XAxis dataKey={xAxis?.dataKey || 'x'} name={xAxis?.label || 'X'} tick={{ fill: chartTheme.axis }} />
+              <YAxis dataKey={yAxis?.dataKey || 'y'} name={yAxis?.label || 'Y'} tick={{ fill: chartTheme.axis }} />
+              <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: chartTheme.tooltipBg, border: `1px solid ${chartTheme.tooltipBorder}`, color: chartTheme.tooltipText }} />
               <Scatter name="Data" data={data} fill={colors[0]} />
             </ScatterChart>
           </ResponsiveContainer>
@@ -303,11 +318,11 @@ export default function DynamicChart({ config }: DynamicChartProps) {
         return (
           <ResponsiveContainer width="100%" height={height}>
             <AreaChart data={data} margin={margin}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={xAxis?.dataKey || 'name'} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+              <XAxis dataKey={xAxis?.dataKey || 'name'} tick={{ fill: chartTheme.axis }} />
+              <YAxis tick={{ fill: chartTheme.axis }} />
+              <Tooltip contentStyle={{ background: chartTheme.tooltipBg, border: `1px solid ${chartTheme.tooltipBorder}`, color: chartTheme.tooltipText }} />
+              <Legend wrapperStyle={{ color: chartTheme.axis }} />
               <Area
                 type="monotone"
                 dataKey={yAxis?.dataKey || series || 'value'}
@@ -321,8 +336,8 @@ export default function DynamicChart({ config }: DynamicChartProps) {
 
       default:
         return (
-          <div className="flex items-center justify-center h-64 bg-gray-50 rounded">
-            <p className="text-gray-500">Unsupported chart type: {type}</p>
+          <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded">
+            <p className="text-gray-500 dark:text-gray-400">Unsupported chart type: {type}</p>
           </div>
         );
     }
@@ -331,9 +346,9 @@ export default function DynamicChart({ config }: DynamicChartProps) {
   return (
     <div className="w-full">
       {title && (
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">{title}</h3>
       )}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         {renderChart()}
       </div>
     </div>

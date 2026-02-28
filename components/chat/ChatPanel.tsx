@@ -108,16 +108,16 @@ export default function ChatPanel() {
     <div className="flex flex-col h-full">
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
+          <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
             <h2 className="text-2xl font-semibold mb-2">Welcome to Pivot</h2>
             <p className="mb-6">Ask questions about your e-commerce data in natural language.</p>
 
-            <div className="bg-gray-50 rounded-lg p-6 max-w-4xl mx-auto mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-4">Dataset Overview</h3>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 max-w-4xl mx-auto mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Dataset Overview</h3>
               <div className="grid md:grid-cols-2 gap-6 text-left text-sm">
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">📊 Data Summary</h4>
-                  <ul className="space-y-1 text-gray-600">
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">📊 Data Summary</h4>
+                  <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                     <li><strong>Time Range:</strong> January - December 2024</li>
                     <li><strong>Total Records:</strong> 1,033 transactions</li>
                     <li><strong>Total Revenue:</strong> $1,053,931.91</li>
@@ -126,8 +126,8 @@ export default function ChatPanel() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">🏷️ Product Categories</h4>
-                  <ul className="space-y-1 text-gray-600">
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">🏷️ Product Categories</h4>
+                  <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                     <li>Electronics ($252k revenue)</li>
                     <li>Home & Garden ($187k revenue)</li>
                     <li>Clothing ($170k revenue)</li>
@@ -137,8 +137,8 @@ export default function ChatPanel() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">🌍 Geographic Regions</h4>
-                  <ul className="space-y-1 text-gray-600">
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">🌍 Geographic Regions</h4>
+                  <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                     <li>Asia (188 orders, $114k revenue)</li>
                     <li>Europe (207 orders, $100k revenue)</li>
                     <li>North America (178 orders, $97k revenue)</li>
@@ -146,8 +146,8 @@ export default function ChatPanel() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">📈 Event Types</h4>
-                  <ul className="space-y-1 text-gray-600">
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">📈 Event Types</h4>
+                  <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                     <li><strong>View:</strong> 663 product browsing events</li>
                     <li><strong>Cart:</strong> 628 add to cart events</li>
                     <li><strong>Purchase:</strong> 986 completed purchases</li>
@@ -159,36 +159,36 @@ export default function ChatPanel() {
             <div className="text-left max-w-2xl mx-auto space-y-3">
               <p className="text-sm font-semibold">💡 Example Questions You Can Ask:</p>
               <div className="grid md:grid-cols-2 gap-3">
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <p className="text-xs font-semibold text-blue-600 mb-1">Revenue Analysis</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Revenue Analysis</p>
                   <ul className="text-xs space-y-1">
-                    <li className="cursor-pointer hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What were the top selling categories in December 2024?')}>• What were the top selling categories in December 2024?</li>
-                    <li className="cursor-pointer hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me monthly revenue for 2024')}>• Show me monthly revenue for 2024</li>
-                    <li className="cursor-pointer hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare Q3 vs Q4 performance')}>• Compare Q3 vs Q4 performance</li>
+                    <li className="cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What were the top selling categories in December 2024?')}>• What were the top selling categories in December 2024?</li>
+                    <li className="cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me monthly revenue for 2024')}>• Show me monthly revenue for 2024</li>
+                    <li className="cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare Q3 vs Q4 performance')}>• Compare Q3 vs Q4 performance</li>
                   </ul>
                 </div>
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <p className="text-xs font-semibold text-green-600 mb-1">Regional Performance</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1">Regional Performance</p>
                   <ul className="text-xs space-y-1">
-                    <li className="cursor-pointer hover:text-green-700 hover:bg-green-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Which region has the highest conversion rate?')}>• Which region has the highest conversion rate?</li>
-                    <li className="cursor-pointer hover:text-green-700 hover:bg-green-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare sales between North America and Europe')}>• Compare sales between North America and Europe</li>
-                    <li className="cursor-pointer hover:text-green-700 hover:bg-green-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me regional revenue breakdown')}>• Show me regional revenue breakdown</li>
+                    <li className="cursor-pointer hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Which region has the highest conversion rate?')}>• Which region has the highest conversion rate?</li>
+                    <li className="cursor-pointer hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare sales between North America and Europe')}>• Compare sales between North America and Europe</li>
+                    <li className="cursor-pointer hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me regional revenue breakdown')}>• Show me regional revenue breakdown</li>
                   </ul>
                 </div>
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <p className="text-xs font-semibold text-purple-600 mb-1">Customer Behavior</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">Customer Behavior</p>
                   <ul className="text-xs space-y-1">
-                    <li className="cursor-pointer hover:text-purple-700 hover:bg-purple-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What\'s the cart abandonment rate?')}>• What&apos;s the cart abandonment rate?</li>
-                    <li className="cursor-pointer hover:text-purple-700 hover:bg-purple-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me the customer purchase funnel')}>• Show me the customer purchase funnel</li>
-                    <li className="cursor-pointer hover:text-purple-700 hover:bg-purple-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Average order value by category')}>• Average order value by category</li>
+                    <li className="cursor-pointer hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What\'s the cart abandonment rate?')}>• What&apos;s the cart abandonment rate?</li>
+                    <li className="cursor-pointer hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me the customer purchase funnel')}>• Show me the customer purchase funnel</li>
+                    <li className="cursor-pointer hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Average order value by category')}>• Average order value by category</li>
                   </ul>
                 </div>
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <p className="text-xs font-semibold text-orange-600 mb-1">Forecasting</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                  <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 mb-1">Forecasting</p>
                   <ul className="text-xs space-y-1">
-                    <li className="cursor-pointer hover:text-orange-700 hover:bg-orange-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What was the highest revenue month in 2024?')}>• What was the highest revenue month in 2024?</li>
-                    <li className="cursor-pointer hover:text-orange-700 hover:bg-orange-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me Electronics category performance')}>• Show me Electronics category performance</li>
-                    <li className="cursor-pointer hover:text-orange-700 hover:bg-orange-50 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare Q1 vs Q4 2024 revenue')}>• Compare Q1 vs Q4 2024 revenue</li>
+                    <li className="cursor-pointer hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('What was the highest revenue month in 2024?')}>• What was the highest revenue month in 2024?</li>
+                    <li className="cursor-pointer hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Show me Electronics category performance')}>• Show me Electronics category performance</li>
+                    <li className="cursor-pointer hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950 rounded px-1 py-0.5 transition-all" onClick={() => handleExampleClick('Compare Q1 vs Q4 2024 revenue')}>• Compare Q1 vs Q4 2024 revenue</li>
                   </ul>
                 </div>
               </div>
@@ -201,14 +201,14 @@ export default function ChatPanel() {
         )}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg p-4 max-w-md">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-w-md">
               <div className="flex items-center space-x-3">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <div className="text-sm text-gray-600 animate-pulse">
+                <div className="text-sm text-gray-600 dark:text-gray-400 animate-pulse">
                   Searching knowledge base and analyzing data...
                 </div>
               </div>
