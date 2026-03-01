@@ -57,3 +57,6 @@ __pycache__/
 
 # Embeddings cache
 .embeddings-cache.json
+
+# Internal notes
+CRITIQUE.md
