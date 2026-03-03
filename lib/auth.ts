@@ -19,9 +19,18 @@ function createDatabase() {
   if (process.env.DATABASE_URL) {
     return new Pool({ connectionString: process.env.DATABASE_URL });
   }
-  // SQLite fallback for demo/dev mode
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const BetterSqlite3 = require('better-sqlite3');
+  // SQLite fallback for local dev/demo mode
+  // better-sqlite3 is an optional dependency (native C++ — unavailable on Vercel)
+  let BetterSqlite3;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    BetterSqlite3 = require('better-sqlite3');
+  } catch {
+    throw new Error(
+      '[Auth] DATABASE_URL is required in this environment. ' +
+      'SQLite fallback (better-sqlite3) is not available.',
+    );
+  }
   const dataDir = path.join(process.cwd(), '.data');
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
