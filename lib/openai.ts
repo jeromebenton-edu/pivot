@@ -1,73 +1,50 @@
 import OpenAI from 'openai';
-import { z } from 'zod';
 import { getEnvironmentConfig } from './env';
+import { createLogger } from './logger';
+import { SYSTEM_PROMPT } from './prompts';
+import type { ChatMessage } from './types';
+import { getErrorInfo } from './types';
 
-let openaiClient: OpenAI | null = null;
+const log = createLogger('openai');
+
+// Use globalThis to survive HMR in dev mode (#R8)
+const globalOpenAI = globalThis as unknown as { __pivotOpenAIClient?: OpenAI | null };
+if (globalOpenAI.__pivotOpenAIClient === undefined) globalOpenAI.__pivotOpenAIClient = null;
 
 function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
+  if (!globalOpenAI.__pivotOpenAIClient) {
     const config = getEnvironmentConfig();
-    const apiKey = config.OPENAI_API_KEY || config.ANTHROPIC_API_KEY; // Fallback to Anthropic key field
-
-    if (!apiKey) {
+    // NEVER fall back to Anthropic key — that would leak credentials to OpenAI (#1)
+    if (!config.OPENAI_API_KEY) {
       throw new Error('OpenAI API key is not configured');
     }
 
-    openaiClient = new OpenAI({
-      apiKey,
+    globalOpenAI.__pivotOpenAIClient = new OpenAI({
+      apiKey: config.OPENAI_API_KEY,
     });
   }
-  return openaiClient;
+  return globalOpenAI.__pivotOpenAIClient;
 }
 
-export const SYSTEM_PROMPT = `You are a conversational business intelligence assistant analyzing REAL e-commerce data from 2024. You have access to actual transaction data with specific revenue numbers, order counts, and customer metrics.
-
-CRITICAL: You must ONLY use the actual data provided in the knowledge base. DO NOT make up or hallucinate any numbers.
-
-The dataset contains:
-- Time period: January - December 2024
-- Total revenue: $1,021,548.54
-- 6,375 transactions: 663 views, 628 cart adds, 986 completed purchases
-- Cart abandonment rate: 68.5% (industry standard, as some purchases bypass cart)
-- 4 regions: North America ($339k, 350 orders), Europe ($335k, 282 orders), Asia Pacific ($225k, 223 orders), Latin America ($96k, 94 orders), Middle East & Africa ($26k, 37 orders)
-- 6 categories: Electronics, Home & Garden, Sports & Outdoors, Toys & Games, Books, Clothing
-
-FORECASTING CAPABILITY: You CAN forecast future revenue for 2025 using ARIMA time series analysis. When users ask for forecasts or predictions for 2025, the system will automatically generate them based on the 2024 historical data.
-
-When answering questions:
-1. ALWAYS use the exact numbers from the knowledge base provided after "Relevant information from the knowledge base:"
-2. For Q3 vs Q4 comparisons: Q3 (Jul-Sep) total is $100,922.97, Q4 (Oct-Dec) total is $88,374.66
-3. Never invent data - if specific information isn't available, say so
-4. When showing charts, use the actual data points provided
-5. Cite which data sources you used from the knowledge base
-6. When users ask for forecasts, acknowledge that you can provide them based on historical trends
-
-Visualization guidelines:
-- Line charts for time series and trends
-- Bar charts for comparing categories or metrics
-- Pie charts for showing proportions of a whole
-- When users say "plot", prefer bar charts over pie charts
-
-Be accurate, concise, and always ground your responses in the actual data provided.`;
-
-export const toolDefinitions = [
-  {
-    name: 'semantic_search',
-    description: 'Search for relevant data based on a natural language query',
-    parameters: z.object({
-      query: z.string().describe('The search query'),
-      limit: z.number().optional().default(5).describe('Number of results to return'),
-      filters: z.record(z.string(), z.any()).optional().describe('Metadata filters to apply'),
-    }),
-  },
-];
-
-interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
+// Consolidate system messages: merge SYSTEM_PROMPT + any system messages from array (#23)
+function buildOpenAIMessages(messages: ChatMessage[]): Array<{ role: 'user' | 'assistant' | 'system'; content: string }> {
+  const systemParts: string[] = [SYSTEM_PROMPT];
+  const chatMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [];
+  for (const msg of messages) {
+    if (msg.role === 'system') {
+      systemParts.push(msg.content);
+    } else {
+      chatMessages.push({ role: msg.role, content: msg.content });
+    }
+  }
+  return [
+    { role: 'system' as const, content: systemParts.join('\n\n') },
+    ...chatMessages,
+  ];
 }
 
-export async function createChatCompletion(messages: ChatMessage[], tools?: any[]) {
+// tools parameter removed — not passed to API (#12)
+export async function createChatCompletion(messages: ChatMessage[]) {
   const client = getOpenAIClient();
 
   // Model priority for OpenAI - using best available models
@@ -78,15 +55,11 @@ export async function createChatCompletion(messages: ChatMessage[], tools?: any[
     'gpt-3.5-turbo',       // Fallback
   ];
 
-  // Add system message at the beginning
-  const messagesWithSystem = [
-    { role: 'system' as const, content: SYSTEM_PROMPT },
-    ...messages
-  ];
+  const messagesWithSystem = buildOpenAIMessages(messages);
 
   for (const model of models) {
     try {
-      console.log(`Attempting to use OpenAI model: ${model}`);
+      log.info(`Attempting model: ${model}`);
 
       const response = await client.chat.completions.create({
         model,
@@ -97,7 +70,7 @@ export async function createChatCompletion(messages: ChatMessage[], tools?: any[
         presence_penalty: 0.1,  // Encourage covering new topics
       });
 
-      console.log(`Successfully used OpenAI model: ${model}`);
+      log.info(`Successfully used model: ${model}`);
 
       // Transform OpenAI response to match Anthropic format
       return {
@@ -108,21 +81,104 @@ export async function createChatCompletion(messages: ChatMessage[], tools?: any[
           }
         ]
       };
-    } catch (error: any) {
-      console.error(`Failed with model ${model}:`, error?.message || error);
+    } catch (error: unknown) {
+      const { message, status } = getErrorInfo(error);
+      log.error(`Failed with model ${model}`, { error: message });
+
+      // Don't retry on non-retryable client errors (#2)
+      if (status === 400 || status === 401 || status === 403) {
+        throw new Error(`OpenAI API error (${status}): ${message}`);
+      }
+
+      // 404 = model not found — skip to next model, don't throw (#R8)
+      if (status === 404) {
+        log.info(`Model ${model} not found (404), trying next`);
+        if (model === models[models.length - 1]) {
+          throw new Error(`No available OpenAI models found`);
+        }
+        continue;
+      }
+
+      // 429 (rate limit) is account-level — don't try other models, just throw (#30)
+      if (status === 429) {
+        throw new Error(`OpenAI rate limited: ${message}`);
+      }
 
       // If it's the last model, throw the error
       if (model === models[models.length - 1]) {
-        console.error('All OpenAI models failed. Final error:', error);
-        throw new Error(`Failed to get response from OpenAI API: ${error?.message || 'Unknown error'}`);
+        log.error('All models failed', { error: message });
+        throw new Error(`Failed to get response from OpenAI API: ${message}`);
       }
 
       // Otherwise, try the next model
-      console.log(`Falling back to next model...`);
+      log.info('Falling back to next model');
     }
   }
 
   throw new Error('Failed to get response from any available OpenAI model');
+}
+
+// Streaming version — calls onChunk for each text token, onDone when complete
+export async function createStreamingChatCompletion(
+  messages: ChatMessage[],
+  onChunk: (text: string) => void,
+  onDone: (fullText: string) => void | Promise<void>,
+  onError: (error: Error) => void
+): Promise<void> {
+  const client = getOpenAIClient();
+
+  const messagesWithSystem = buildOpenAIMessages(messages);
+
+  const models = ['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'];
+  let lastError: Error | null = null;
+  let chunksSent = false; // Track whether we've sent data to the client (#10)
+
+  for (const model of models) {
+    try {
+      log.info(`Streaming with model: ${model}`);
+      const stream = await client.chat.completions.create({
+        model,
+        messages: messagesWithSystem,
+        temperature: 0.2,
+        max_tokens: 4096,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.1,
+        stream: true,
+      });
+
+      let fullText = '';
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (delta) {
+          fullText += delta;
+          chunksSent = true;
+          onChunk(delta);
+        }
+      }
+      await onDone(fullText);
+      return;
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      lastError = err;
+      log.error(`Stream failed with model ${model}`, { error: err.message });
+
+      // If we already sent chunks, don't retry — would garble output (#10)
+      if (chunksSent) {
+        onError(err);
+        return;
+      }
+
+      // Don't retry on non-retryable client errors (#2)
+      const { status } = getErrorInfo(error);
+      if (status === 400 || status === 401 || status === 403 || status === 429) {
+        onError(err);
+        return;
+      }
+
+      if (model === models[models.length - 1]) break;
+    }
+  }
+  onError(lastError || new Error('All models failed'));
 }
 
 export { getOpenAIClient as getOpenAI };

@@ -47,11 +47,11 @@ export default function HowThisWorks() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">Presentation Layer</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Next.js App Router with chat UI and Recharts visualizations</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Next.js App Router with chat UI and ECharts visualizations</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">Intelligence Layer</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Anthropic API with MCP Tool Server and RAG retrieval</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">OpenAI GPT-4o (primary) with Anthropic fallback, MCP Tool Server, and RAG retrieval</p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-2">Data Layer</h3>
@@ -114,8 +114,8 @@ export default function HowThisWorks() {
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Dynamic Visualizations</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-3">Automatically generated charts and graphs</p>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
-                    <li>Bar charts, line charts, pie charts</li>
-                    <li>ARIMA forecasting with confidence intervals</li>
+                    <li>Bar, line, pie, scatter, waterfall, radar, and more</li>
+                    <li>SARIMAX forecasting with confidence intervals</li>
                     <li>Responsive design for all screen sizes</li>
                   </ul>
                 </div>
@@ -147,19 +147,19 @@ export default function HowThisWorks() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Frontend</h3>
                     <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <li><strong>Next.js 15:</strong> Server components and App Router</li>
-                      <li><strong>React:</strong> Interactive UI components</li>
+                      <li><strong>Next.js 16:</strong> Server components and App Router</li>
+                      <li><strong>React 19:</strong> Interactive UI components</li>
                       <li><strong>Tailwind CSS:</strong> Utility-first styling</li>
-                      <li><strong>Recharts:</strong> Data visualization library</li>
+                      <li><strong>ECharts:</strong> Data visualization library</li>
                     </ul>
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Backend</h3>
                     <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <li><strong>Anthropic API:</strong> Claude for LLM capabilities</li>
-                      <li><strong>Chroma:</strong> Vector database for embeddings</li>
-                      <li><strong>Voyage AI:</strong> High-quality text embeddings</li>
-                      <li><strong>Vercel:</strong> Serverless deployment platform</li>
+                      <li><strong>OpenAI GPT-4o:</strong> Primary LLM (Anthropic Claude fallback)</li>
+                      <li><strong>Python SARIMAX:</strong> Statistical forecasting microservice</li>
+                      <li><strong>Chroma + Voyage AI:</strong> Vector search for RAG</li>
+                      <li><strong>Better Auth:</strong> Authentication with RBAC</li>
                     </ul>
                   </div>
                 </div>
@@ -173,10 +173,10 @@ export default function HowThisWorks() {
                   Start exploring your data with natural language queries:
                 </p>
                 <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside mb-4">
-                  <li>&quot;What were our top selling categories last month?&quot;</li>
-                  <li>&quot;Show me revenue trends over time&quot;</li>
-                  <li>&quot;Compare sales between different regions&quot;</li>
-                  <li>&quot;Which products have the highest conversion rate?&quot;</li>
+                  <li>&quot;Which suppliers had the best OTD rate last quarter?&quot;</li>
+                  <li>&quot;Show me procurement spend trends over time&quot;</li>
+                  <li>&quot;Compare supplier performance across regions&quot;</li>
+                  <li>&quot;Which product lines have the lowest defect rate?&quot;</li>
                 </ul>
                 <Link
                   href="/"
@@ -193,7 +193,7 @@ export default function HowThisWorks() {
       <footer className="border-t border-gray-200 dark:border-gray-800 mt-16 py-8 px-6">
         <div className="max-w-4xl mx-auto text-center text-sm text-gray-600 dark:text-gray-400">
           <p>
-            Built with Next.js, Anthropic API, and the Model Context Protocol.
+            Built with Next.js, OpenAI, and the Model Context Protocol.
             <a
               href="https://github.com/jeromebenton-edu/Pivot"
               target="_blank"

@@ -58,5 +58,8 @@ __pycache__/
 # Embeddings cache
 .embeddings-cache.json
 
+# Local data (SQLite auth DB, etc.)
+.data/
+
 # Internal notes
 CRITIQUE.md

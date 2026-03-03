@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// Dynamically import DynamicChart to avoid SSR issues with Recharts
+// Dynamically import DynamicChart to avoid SSR issues with ECharts
 const DynamicChart = dynamic(() => import('../charts/DynamicChart'), {
   ssr: false,
   loading: () => (
@@ -18,9 +18,10 @@ const DynamicChart = dynamic(() => import('../charts/DynamicChart'), {
 
 interface MessageBubbleProps {
   message: Message;
+  onDrillDown?: (query: string) => void;
 }
 
-export default function MessageBubble({ message }: MessageBubbleProps) {
+export default function MessageBubble({ message, onDrillDown }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
   return (
@@ -60,7 +61,13 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         {message.chartConfig && (
           <div className="mt-3 -mx-3 -mb-3 p-3 bg-white dark:bg-gray-900 rounded-b-lg">
-            <DynamicChart config={message.chartConfig} />
+            <DynamicChart config={message.chartConfig} onDrillDown={onDrillDown} />
+          </div>
+        )}
+
+        {message.chartConfig?.sampleData && (
+          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400 italic">
+            Note: This visualization uses sample data. Upload your dataset for real results.
           </div>
         )}
 

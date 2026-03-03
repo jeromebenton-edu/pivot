@@ -15,11 +15,17 @@ const eslintConfig = defineConfig([
     // Additional ignores:
     "venv/**",
     "data/scripts/*.js",
+    "scripts/**",
+    "test-*.js",
   ]),
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-require-imports": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+      }],
       "prefer-const": "warn",
     }
   }

@@ -4,90 +4,56 @@
 
 import OpenAI from 'openai';
 
-let openaiClient: OpenAI | null = null;
+// Use globalThis to survive HMR in dev mode (#R8)
+const globalEmbedClient = globalThis as unknown as { __pivotOpenAIEmbedClient?: OpenAI | null };
+if (globalEmbedClient.__pivotOpenAIEmbedClient === undefined) globalEmbedClient.__pivotOpenAIEmbedClient = null;
 
 function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
+  if (!globalEmbedClient.__pivotOpenAIEmbedClient) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error('OpenAI API key not configured for embeddings');
     }
-    openaiClient = new OpenAI({ apiKey });
+    globalEmbedClient.__pivotOpenAIEmbedClient = new OpenAI({ apiKey });
   }
-  return openaiClient;
+  return globalEmbedClient.__pivotOpenAIEmbedClient;
 }
 
-// Generate embedding using OpenAI
+// Generate embedding using OpenAI (throws on failure — caller handles fallback)
 export async function generateOpenAIEmbedding(text: string): Promise<number[]> {
-  try {
-    const client = getOpenAIClient();
+  const client = getOpenAIClient();
+
+  const response = await client.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text,
+    encoding_format: 'float'
+  });
+
+  const item = response.data[0];
+  if (!item) throw new Error('OpenAI returned no embedding data');
+  return item.embedding;
+}
+
+// Batch embedding function (throws on failure — caller handles fallback)
+export async function generateOpenAIEmbeddings(texts: string[]): Promise<number[][]> {
+  const client = getOpenAIClient();
+
+  const batchSize = 100;
+  const embeddings: number[][] = [];
+
+  for (let i = 0; i < texts.length; i += batchSize) {
+    const batch = texts.slice(i, i + batchSize);
 
     const response = await client.embeddings.create({
-      model: 'text-embedding-3-small', // Fast, cheap, and good quality
-      input: text,
+      model: 'text-embedding-3-small',
+      input: batch,
       encoding_format: 'float'
     });
 
-    return response.data[0].embedding;
-  } catch (error) {
-    console.error('OpenAI embedding error:', error);
-    // Fallback to mock embedding if OpenAI fails
-    return generateMockEmbedding(text);
-  }
-}
-
-// Batch embedding function for efficiency
-export async function generateOpenAIEmbeddings(texts: string[]): Promise<number[][]> {
-  try {
-    const client = getOpenAIClient();
-
-    // OpenAI can handle up to 2048 inputs in a single request
-    const batchSize = 100;
-    const embeddings: number[][] = [];
-
-    for (let i = 0; i < texts.length; i += batchSize) {
-      const batch = texts.slice(i, i + batchSize);
-
-      const response = await client.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: batch,
-        encoding_format: 'float'
-      });
-
-      embeddings.push(...response.data.map(d => d.embedding));
-    }
-
-    return embeddings;
-  } catch (error) {
-    console.error('OpenAI batch embedding error:', error);
-    // Fallback to mock embeddings
-    return Promise.all(texts.map(text => generateMockEmbedding(text)));
-  }
-}
-
-// Fallback mock embedding (same as before but simpler)
-function generateMockEmbedding(text: string): number[] {
-  const words = text.toLowerCase().split(/\s+/);
-  const embedding = new Array(1536).fill(0); // OpenAI embedding size
-
-  // Simple hash-based embedding for consistency
-  words.forEach((word, idx) => {
-    const hash = word.split('').reduce((acc, char) => {
-      return ((acc << 5) - acc) + char.charCodeAt(0);
-    }, 0);
-
-    for (let i = 0; i < 10 && (idx * 10 + i) < 1536; i++) {
-      embedding[(Math.abs(hash) + i) % 1536] += 1 / (idx + 1);
-    }
-  });
-
-  // Normalize
-  const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-  if (magnitude > 0) {
-    for (let i = 0; i < embedding.length; i++) {
-      embedding[i] = embedding[i] / magnitude;
-    }
+    // Sort by index to ensure order matches input — API may return in any order (#2 R7)
+    const sorted = [...response.data].sort((a, b) => a.index - b.index);
+    embeddings.push(...sorted.map(d => d.embedding));
   }
 
-  return embedding;
+  return embeddings;
 }

@@ -1,55 +1,55 @@
 {
   "monthlyTrend": {
     "type": "line",
-    "title": "Monthly Revenue Trend",
+    "title": "Monthly Procurement Spend",
     "data": [
       {
         "month": "2024-01",
-        "revenue": 39580.52
+        "revenue": 3738900.1
       },
       {
         "month": "2024-02",
-        "revenue": 33189.33
+        "revenue": 4018088.69
       },
       {
         "month": "2024-03",
-        "revenue": 30056.27
+        "revenue": 4565873.18
       },
       {
         "month": "2024-04",
-        "revenue": 44570.15
+        "revenue": 4702460.63
       },
       {
         "month": "2024-05",
-        "revenue": 33352.79
+        "revenue": 4612033.46
       },
       {
         "month": "2024-06",
-        "revenue": 23697.93
+        "revenue": 4704551.77
       },
       {
         "month": "2024-07",
-        "revenue": 28575.28
+        "revenue": 3921957.64
       },
       {
         "month": "2024-08",
-        "revenue": 29641.31
+        "revenue": 4431734.55
       },
       {
         "month": "2024-09",
-        "revenue": 42706.38
+        "revenue": 4804379.47
       },
       {
         "month": "2024-10",
-        "revenue": 36942.35
+        "revenue": 4894556.01
       },
       {
         "month": "2024-11",
-        "revenue": 28402.15
+        "revenue": 4981420.44
       },
       {
         "month": "2024-12",
-        "revenue": 23030.16
+        "revenue": 4050464.67
       }
     ],
     "xAxis": {
@@ -58,83 +58,168 @@
     },
     "yAxis": {
       "dataKey": "revenue",
-      "label": "Revenue ($)"
-    }
+      "label": "Spend ($)"
+    },
+    "height": 400
   },
   "categoryBreakdown": {
     "type": "bar",
-    "title": "Revenue by Category",
+    "title": "Spend by Product Line",
     "data": [
       {
-        "name": "Electronics",
-        "revenue": 193083.7199999999,
-        "orders": 99
+        "name": "Industrial Bearings",
+        "revenue": 12964552.23,
+        "orders": 701
       },
       {
-        "name": "Sports & Outdoors",
-        "revenue": 90021.36000000002,
-        "orders": 101
+        "name": "Structural Fabrications",
+        "revenue": 11527533.17,
+        "orders": 637
       },
       {
-        "name": "Home & Garden",
-        "revenue": 60984.619999999995,
-        "orders": 120
+        "name": "Electronic Assemblies",
+        "revenue": 10615538.25,
+        "orders": 644
       },
       {
-        "name": "Clothing",
-        "revenue": 26840.239999999994,
-        "orders": 126
+        "name": "Hydraulic Components",
+        "revenue": 7752200.88,
+        "orders": 554
       },
       {
-        "name": "Toys & Games",
-        "revenue": 17312.42000000001,
-        "orders": 110
+        "name": "Polymer & Seal Kits",
+        "revenue": 7512731.69,
+        "orders": 397
       },
       {
-        "name": "Books",
-        "revenue": 5502.26,
-        "orders": 103
+        "name": "Precision Tooling",
+        "revenue": 3053864.39,
+        "orders": 266
       }
     ],
     "xAxis": {
       "dataKey": "name",
-      "label": "Category"
+      "label": "Product Line"
     },
     "yAxis": {
       "dataKey": "revenue",
-      "label": "Revenue ($)"
+      "label": "Spend ($)"
     }
   },
   "regionPie": {
     "type": "pie",
-    "title": "Orders by Region",
+    "title": "Procurement by Region",
     "data": [
       {
+        "name": "Latin America",
+        "revenue": 7447917.82,
+        "orders": 434
+      },
+      {
         "name": "North America",
-        "revenue": 96616.85999999997,
-        "orders": 167
-      },
-      {
-        "name": "Asia",
-        "revenue": 114078.57000000005,
-        "orders": 176
-      },
-      {
-        "name": "South America",
-        "revenue": 82854.17999999996,
-        "orders": 154
+        "revenue": 17634671.05,
+        "orders": 1072
       },
       {
         "name": "Europe",
-        "revenue": 100195.01000000004,
-        "orders": 162
+        "revenue": 18114780.19,
+        "orders": 1059
+      },
+      {
+        "name": "Asia Pacific",
+        "revenue": 10229051.55,
+        "orders": 634
       }
     ],
     "xAxis": {
       "dataKey": "name"
     },
     "yAxis": {
-      "dataKey": "orders"
+      "dataKey": "revenue"
+    }
+  },
+  "supplierPerformance": {
+    "type": "bar",
+    "title": "Supplier On-Time Delivery Rate",
+    "data": [
+      {
+        "name": "Bavarian Precision Tools",
+        "otd_rate": 98,
+        "quality_score": 96.8,
+        "revenue": 1436724.73,
+        "orders": 98
+      },
+      {
+        "name": "Kyoto Automation Systems",
+        "otd_rate": 96.8,
+        "quality_score": 97,
+        "revenue": 4893147.98,
+        "orders": 311
+      },
+      {
+        "name": "Shenzhen HiTech Electronics",
+        "otd_rate": 96.7,
+        "quality_score": 97.1,
+        "revenue": 3663904.2,
+        "orders": 243
+      },
+      {
+        "name": "Ontario Packaging Systems",
+        "otd_rate": 96.4,
+        "quality_score": 97.1,
+        "revenue": 3028969.98,
+        "orders": 166
+      },
+      {
+        "name": "Rhine Valley Metalworks",
+        "otd_rate": 96.2,
+        "quality_score": 97,
+        "revenue": 5253954.53,
+        "orders": 316
+      },
+      {
+        "name": "Apex Precision Components",
+        "otd_rate": 95.8,
+        "quality_score": 97,
+        "revenue": 7696068.06,
+        "orders": 457
+      },
+      {
+        "name": "Great Lakes Polymer Co.",
+        "otd_rate": 91.9,
+        "quality_score": 91.5,
+        "revenue": 2531836.22,
+        "orders": 135
+      },
+      {
+        "name": "Northern Rubber & Gasket",
+        "otd_rate": 91.5,
+        "quality_score": 91.5,
+        "revenue": 3790554.39,
+        "orders": 235
+      },
+      {
+        "name": "Texas Fluid Power Systems",
+        "otd_rate": 90.2,
+        "quality_score": 91.6,
+        "revenue": 1804887.42,
+        "orders": 132
+      },
+      {
+        "name": "Polish Coating Solutions",
+        "otd_rate": 89.3,
+        "quality_score": 91.7,
+        "revenue": 3428827.92,
+        "orders": 214
+      }
+    ],
+    "xAxis": {
+      "dataKey": "name",
+      "label": "Supplier"
+    },
+    "yAxis": {
+      "dataKey": "otd_rate",
+      "label": "OTD Rate (%)"
     }
   }
 }

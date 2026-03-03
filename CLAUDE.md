@@ -6,7 +6,7 @@
 3. **Test before telling** - Saves time and tokens for both parties
 
 ## Project Overview
-Business Intelligence chat application with RAG (Retrieval-Augmented Generation) for analyzing e-commerce data from 2024.
+Business Intelligence chat application with RAG (Retrieval-Augmented Generation) for analyzing supply chain & manufacturing data from 2024.
 
 ## Recent Work - Feb 26, 2026
 
@@ -57,12 +57,14 @@ const models = [
 
 ### Dataset Information
 - Time period: January - December 2024
-- Total revenue: $393,744.62
-- 2,000 transactions: 663 views, 628 cart adds, 709 completed purchases
-- Cart abandonment rate: 68.5%
-- 4 regions: Asia ($114k), Europe ($100k), North America ($97k), South America ($83k)
-- Q3 total: $100,922.97
-- Q4 total: $88,374.66
+- Total procurement spend: $53,426,420.61
+- 10,004 records across 3,199 purchase orders
+- 15 suppliers, 60 materials, 6 facilities
+- 4 regions: Europe ($18.1M), North America ($17.6M), Asia Pacific ($10.2M), Latin America ($7.4M)
+- On-time delivery rate: 91.8%, avg lead time: 13.3 days
+- Avg defect rate: 1.72%, avg quality score: 93.3/100
+- Highest spend month: November 2024 ($4.98M)
+- Lowest spend month: January 2024 ($3.74M)
 
 ### Testing Commands
 ```bash
@@ -100,12 +102,12 @@ CHROMA_COLLECTION_NAME=pivot-embeddings
 
 ### Chart Generation Logic
 - "plot" keyword → bar charts (not pie charts)
-- Q3 vs Q4 comparisons → line charts with time series
-- Conversion rates → bar charts by region
-- Cart abandonment → visualization showing 68.5% rate
+- Trend queries → line charts with time series
+- Regional comparisons → bar charts by region
+- Supplier performance → scatter/radar charts
 
 ### Previous Issues Fixed
-1. Q3 vs Q4 comparison showing wrong chart type
-2. "Plot conversion rate" showing pie instead of bar chart
+1. Chart type selection for comparison queries
+2. "Plot" keyword showing pie instead of bar chart
 3. LLM hallucinating data instead of using RAG results
 4. Claude API tier limitations (only Haiku access on free tier)
