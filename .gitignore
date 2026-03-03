@@ -63,3 +63,4 @@ __pycache__/
 
 # Internal notes
 CRITIQUE.md
+.github/workflows/
