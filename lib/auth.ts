@@ -6,11 +6,12 @@ import { hasPermission, type Action } from './rbac';
 import path from 'path';
 import fs from 'fs';
 
-// Block demo mode in production (#R9-2)
+// Block demo mode in deployed environments (#R9-2)
 if (process.env.DEMO_MODE === 'true') {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('[Auth] FATAL: DEMO_MODE=true is not allowed in production');
-    throw new Error('DEMO_MODE cannot be enabled in production');
+  const isDeployed = !!(process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.FLY_APP_NAME);
+  if (isDeployed) {
+    console.error('[Auth] FATAL: DEMO_MODE=true is not allowed in deployed environments');
+    throw new Error('DEMO_MODE cannot be enabled in deployed environments');
   }
   console.warn('[Auth] DEMO_MODE is enabled — demo credentials are active');
 }
