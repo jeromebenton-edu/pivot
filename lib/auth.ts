@@ -6,15 +6,7 @@ import { hasPermission, type Action } from './rbac';
 import path from 'path';
 import fs from 'fs';
 
-// Block demo mode in deployed environments (#R9-2)
-if (process.env.DEMO_MODE === 'true') {
-  const isDeployed = !!(process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.FLY_APP_NAME);
-  if (isDeployed) {
-    console.error('[Auth] FATAL: DEMO_MODE=true is not allowed in deployed environments');
-    throw new Error('DEMO_MODE cannot be enabled in deployed environments');
-  }
-  console.warn('[Auth] DEMO_MODE is enabled — demo credentials are active');
-}
+// DEMO_MODE guard moved into seedDemoUsers() to avoid blocking next build (#R9-2)
 
 function createDatabase() {
   if (process.env.DATABASE_URL) {
@@ -80,6 +72,12 @@ export const handlers = toNextJsHandler(authInstance);
 let demoSeeded = false;
 async function seedDemoUsers() {
   if (demoSeeded || process.env.DEMO_MODE !== 'true') return;
+  // Block demo mode in deployed environments (#R9-2)
+  const isDeployed = !!(process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.FLY_APP_NAME);
+  if (isDeployed) {
+    console.error('[Auth] DEMO_MODE=true is not allowed in deployed environments — skipping seed');
+    return;
+  }
   demoSeeded = true;
 
   const baseURL = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
