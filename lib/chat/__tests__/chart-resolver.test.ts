@@ -81,6 +81,39 @@ describe('shouldForecast', () => {
   it('does not trigger for normal queries', () => {
     expect(shouldForecast('what is total revenue')).toBe(false);
   });
+
+  // Natural language forward-looking intent
+  it('detects "what does Q4 look like?"', () => {
+    expect(shouldForecast('what does Q4 look like?')).toBe(true);
+  });
+
+  it('detects "what should we expect for next quarter?"', () => {
+    expect(shouldForecast('what should we expect for next quarter?')).toBe(true);
+  });
+
+  it('detects "where is spend headed for the rest of the year?"', () => {
+    expect(shouldForecast('where is spend headed for the rest of the year?')).toBe(true);
+  });
+
+  it('detects "what\'s the Q4 outlook?"', () => {
+    expect(shouldForecast("what's the Q4 outlook?")).toBe(true);
+  });
+
+  it('detects "going forward, what do you see?"', () => {
+    expect(shouldForecast('going forward, what do you see?')).toBe(true);
+  });
+
+  it('detects compound query with forecast intent', () => {
+    expect(shouldForecast('what drove the Q3 dip and what does Q4 look like?')).toBe(true);
+  });
+
+  it('does not trigger for historical quarter question', () => {
+    expect(shouldForecast('what was Q3 spend?')).toBe(false);
+  });
+
+  it('does not trigger for comparative quarter question', () => {
+    expect(shouldForecast('compare Q2 and Q3')).toBe(false);
+  });
 });
 
 describe('shouldChart', () => {

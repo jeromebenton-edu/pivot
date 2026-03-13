@@ -38,6 +38,24 @@ const DATASET_END_YEAR = 2024;
 const FORECAST_KEYWORDS = [
   'forecast', 'predict', 'sarima', 'arima', 'projection', 'future', 'next month',
   'estimate', 'procurement forecast', 'spend forecast', 'demand forecast',
+  'next quarter', 'upcoming quarter',
+];
+
+// Forward-looking phrases that imply the user wants a projection,
+// even without explicit keywords like "forecast" or "predict".
+const FORWARD_LOOKING_PATTERNS: RegExp[] = [
+  /what does .+ look like/,
+  /what will .+ (be|look)/,
+  /what should we expect/,
+  /what can we expect/,
+  /where (?:are we|is .+) headed/,
+  /going forward/,
+  /\boutlook\b/,
+  /\btrajectory\b/,
+  /rest of the year/,
+  /end of year/,
+  /year[- ]?end/,
+  /\beoy\b/,
 ];
 
 const VISUALIZATION_KEYWORDS = [
@@ -76,10 +94,19 @@ const SHORT_MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug
 
 export function shouldForecast(query: string): boolean {
   const q = query.toLowerCase();
+
+  // Layer 1: explicit keyword match
+  if (FORECAST_KEYWORDS.some(kw => q.includes(kw))) return true;
+
+  // Layer 2: future year mention (e.g. "2025", "2026")
   const yearMatch = q.match(/\b(20\d{2})\b/);
   const mentionedYear = yearMatch ? parseInt(yearMatch[1]) : null;
-  const mentionsFutureYear = mentionedYear !== null && mentionedYear > DATASET_END_YEAR;
-  return FORECAST_KEYWORDS.some(kw => q.includes(kw)) || mentionsFutureYear;
+  if (mentionedYear !== null && mentionedYear > DATASET_END_YEAR) return true;
+
+  // Layer 3: forward-looking natural language patterns
+  if (FORWARD_LOOKING_PATTERNS.some(re => re.test(q))) return true;
+
+  return false;
 }
 
 export function shouldChart(query: string): boolean {
@@ -151,6 +178,11 @@ export async function resolveForecast(query: string): Promise<ForecastResult | n
         'eleven': 11, 'twelve': 12,
       };
 
+      // Detect quarter references for implicit future periods
+      const singleQMatch = q.match(/\bq([1-4])\b/i);
+      const hasNextQuarter = /next quarter|upcoming quarter/.test(q);
+      const hasRestOfYear = /rest of the year|end of year|year[- ]?end|\beoy\b/.test(q);
+
       if (nextMonthsMatch) {
         const matchText = nextMonthsMatch[1];
         steps = numberWords[matchText] || parseInt(matchText) || 6;
@@ -162,6 +194,22 @@ export async function resolveForecast(query: string): Promise<ForecastResult | n
       } else if (q.includes('q1') && q.includes('q2')) {
         months = Array.from({ length: 6 }, (_, i) => fmtMonth(targetYear, i + 1));
         steps = 6;
+      } else if (hasNextQuarter) {
+        // "next quarter" → 3 months forward from dataset end
+        steps = 3;
+        months = Array.from({ length: steps }, (_, i) => fmtMonth(targetYear, i + 1));
+      } else if (hasRestOfYear) {
+        // "rest of the year" / "EOY" → remaining months in current year from dataset end
+        // Dataset ends Dec 2024, so forecast the full next year
+        months = genFullYear(targetYear);
+        steps = 12;
+      } else if (singleQMatch) {
+        // Single quarter reference (e.g. "Q4", "Q1")
+        // Resolve to the 3 months of that quarter in the target year
+        const qNum = parseInt(singleQMatch[1]);
+        const qStartMonth = (qNum - 1) * 3 + 1;
+        steps = 3;
+        months = Array.from({ length: 3 }, (_, i) => fmtMonth(targetYear, qStartMonth + i));
       } else {
         const specificMonth = MONTH_NAMES.findIndex(m => q.includes(m));
         if (specificMonth >= 0) {
@@ -171,8 +219,9 @@ export async function resolveForecast(query: string): Promise<ForecastResult | n
           months = genFullYear(targetYear);
           steps = 12;
         } else {
-          months = [fmtMonth(targetYear, 1)];
-          steps = 1;
+          // Default fallback: 3 months forward instead of 1
+          steps = 3;
+          months = Array.from({ length: steps }, (_, i) => fmtMonth(targetYear, i + 1));
         }
       }
     }
