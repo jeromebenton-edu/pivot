@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "db:migrate": "npx tsx lib/db/migrate.ts",
+    "embeddings:precompute": "node scripts/precompute-embeddings.js",
     "prepare": "husky"
   },
   "lint-staged": {

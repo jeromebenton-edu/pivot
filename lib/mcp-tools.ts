@@ -12,6 +12,18 @@ import dataChunksRaw from '../data/samples/data_chunks.json';
 // Cast once to typed DataChunk array
 const dataChunks = dataChunksRaw as unknown as DataChunk[];
 
+// Only summary/overview/insight chunks are indexed into the vector store; raw transaction
+// rows (~10k) are kept in-memory for direct aggregation but skipped from RAG to avoid
+// embedding cost on cold start (#cold-start)
+export function isIndexableChunk(chunk: DataChunk): boolean {
+  const type = chunk.metadata?.type;
+  if (!type) return false; // raw transaction rows are not indexed
+  const t = String(type);
+  return t.includes('summary') || t.includes('overview') || t.includes('insights');
+}
+
+export const indexableChunks = dataChunks.filter(isIndexableChunk);
+
 const log = createLogger('mcp-tools');
 
 // Tool schemas using Zod
@@ -309,7 +321,9 @@ export async function initializeRAG() {
     // Initialize PostgreSQL SQL layer (no-op if DATABASE_URL not set)
     await initializeSupplyChainDB();
 
-    await addChunksToVectorStore(dataChunks);
+    // Only index summary chunks — raw transaction rows skipped to keep cold start fast (#cold-start)
+    await addChunksToVectorStore(indexableChunks);
+    log.info('Indexed summary chunks into vector store', { indexed: indexableChunks.length, totalChunks: dataChunks.length });
 
     // Pre-extract monthly summaries for forecast route
     const monthlySummaries: Array<{ month: string; revenue: number }> = [];
@@ -326,7 +340,7 @@ export async function initializeRAG() {
     log.info('Pre-extracted monthly summaries for forecasting', { count: monthlySummaries.length });
 
     globalRAG.__pivotRAGInitialized = true;
-    return { success: true, message: `Initialized RAG with ${dataChunks.length} chunks` };
+    return { success: true, message: `Initialized RAG with ${indexableChunks.length} indexed chunks (${dataChunks.length} total available for aggregation)` };
   } catch (error) {
     // Log full error with stack trace for debugging (#8 R6)
     log.error('Failed to initialize RAG', { error: error instanceof Error ? error.stack : String(error) });

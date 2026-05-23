@@ -1,153 +1,110 @@
 #!/usr/bin/env node
 
 /**
- * Pre-compute embeddings for all chunks to eliminate real-time generation delays
+ * Pre-compute OpenAI embeddings for indexable chunks and write a committed cache
+ * to data/embeddings-cache.json. Eliminates the ~2 minute cold-start delay where
+ * initializeRAG would otherwise embed all chunks on first request (#cold-start).
+ *
+ * Cache key format MUST match lib/chroma.ts: `${provider}_${chunk.id}_${hash}`
+ * Hash MUST match lib/chroma.ts hashContent: sha256 truncated to 32 hex chars.
  */
 
 require('dotenv').config({ path: '.env' });
 const fs = require('fs');
 const path = require('path');
+const { createHash } = require('crypto');
 
-// Simple OpenAI client
-class OpenAIClient {
-  constructor(apiKey) {
-    this.apiKey = apiKey;
-    this.baseURL = 'https://api.openai.com/v1';
-  }
-
-  async createEmbedding(text) {
-    const response = await fetch(`${this.baseURL}/embeddings`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: text,
-        encoding_format: 'float'
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.data[0].embedding;
-  }
-}
-
-// Hash function for content (same as in chroma.ts)
+// Mirrors lib/chroma.ts hashContent — keep in sync (#cold-start)
 function hashContent(content) {
-  let hash = 0;
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash.toString();
+  return createHash('sha256').update(content).digest('hex').slice(0, 32);
 }
 
-async function precomputeEmbeddings() {
-  console.log('🚀 Pre-computing embeddings for all chunks...\n');
+// Mirrors lib/mcp-tools.ts isIndexableChunk — keep in sync (#cold-start)
+function isIndexableChunk(chunk) {
+  const type = chunk.metadata && chunk.metadata.type;
+  if (!type) return false;
+  const t = String(type);
+  return t.includes('summary') || t.includes('overview') || t.includes('insights');
+}
 
-  // Check for OpenAI API key
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ OPENAI_API_KEY not found in .env');
-    console.log('Please add your OpenAI API key to use real embeddings.');
+const PROVIDER = 'openai';
+const MODEL = 'text-embedding-3-small'; // Must match lib/openai-embeddings.ts
+const BATCH_SIZE = 128;
+
+async function embedBatch(apiKey, inputs) {
+  const response = await fetch('https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      input: inputs,
+      encoding_format: 'float',
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`OpenAI API error: ${response.status} ${response.statusText} ${body}`);
+  }
+
+  const data = await response.json();
+  // Sort by index to preserve input order — API may return in any order
+  const sorted = [...data.data].sort((a, b) => a.index - b.index);
+  return sorted.map((d) => d.embedding);
+}
+
+async function main() {
+  console.log('Pre-computing embeddings for indexable chunks...');
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('ERROR: OPENAI_API_KEY not found in .env');
     process.exit(1);
   }
 
-  console.log('✅ OpenAI API key found');
-
-  const client = new OpenAIClient(process.env.OPENAI_API_KEY);
-
-  // Load chunks
-  const chunksPath = path.join(__dirname, '../data/samples/data_chunks.json');
+  const chunksPath = path.join(__dirname, '..', 'data', 'samples', 'data_chunks.json');
   if (!fs.existsSync(chunksPath)) {
-    console.error('❌ data_chunks.json not found');
+    console.error(`ERROR: ${chunksPath} not found`);
     process.exit(1);
   }
 
-  const chunks = JSON.parse(fs.readFileSync(chunksPath, 'utf-8'));
-  console.log(`📊 Found ${chunks.length} chunks to process`);
+  const allChunks = JSON.parse(fs.readFileSync(chunksPath, 'utf-8'));
+  const chunks = allChunks.filter(isIndexableChunk);
+  console.log(`Found ${allChunks.length} total chunks, ${chunks.length} indexable`);
 
-  // Cache file path
-  const cacheFile = path.join(__dirname, '../.embeddings-cache.json');
+  const outFile = path.join(__dirname, '..', 'data', 'embeddings-cache.json');
+  const cache = {};
 
-  // Load existing cache
-  let cache = {};
-  if (fs.existsSync(cacheFile)) {
-    try {
-      cache = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
-      console.log(`📦 Loaded existing cache with ${Object.keys(cache).length} entries`);
-    } catch (error) {
-      console.log('⚠️  Could not load existing cache, starting fresh');
-      cache = {};
-    }
-  }
+  let processed = 0;
+  for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+    const batch = chunks.slice(i, i + BATCH_SIZE);
+    const inputs = batch.map((c) => c.content);
+    const embeddings = await embedBatch(apiKey, inputs);
 
-  let generated = 0;
-  let cached = 0;
-  let errors = 0;
-
-  console.log('\n🔄 Processing chunks...');
-
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    const contentHash = hashContent(chunk.content);
-    const cacheKey = `${chunk.id}_${contentHash}`;
-
-    process.stdout.write(`\r[${i + 1}/${chunks.length}] Processing chunk ${chunk.id}...`);
-
-    if (cache[cacheKey]) {
-      cached++;
-      continue;
+    if (embeddings.length !== batch.length) {
+      throw new Error(`Batch size mismatch: expected ${batch.length}, got ${embeddings.length}`);
     }
 
-    try {
-      // Generate embedding
-      const embedding = await client.createEmbedding(chunk.content);
-      cache[cacheKey] = embedding;
-      generated++;
-
-      // Save cache every 10 chunks to avoid losing progress
-      if (generated % 10 === 0) {
-        fs.writeFileSync(cacheFile, JSON.stringify(cache));
-      }
-
-      // Rate limit: wait 100ms between requests to avoid hitting API limits
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-    } catch (error) {
-      console.error(`\n❌ Error processing chunk ${chunk.id}:`, error.message);
-      errors++;
-
-      // If we hit rate limits, wait longer
-      if (error.message.includes('rate') || error.message.includes('429')) {
-        console.log('⏱️  Rate limit hit, waiting 10 seconds...');
-        await new Promise(resolve => setTimeout(resolve, 10000));
-      }
+    for (let j = 0; j < batch.length; j++) {
+      const chunk = batch[j];
+      const key = `${PROVIDER}_${chunk.id}_${hashContent(chunk.content)}`;
+      cache[key] = embeddings[j];
     }
+
+    processed += batch.length;
+    console.log(`  ${processed}/${chunks.length} embedded`);
   }
 
-  // Save final cache
-  fs.writeFileSync(cacheFile, JSON.stringify(cache));
-
-  console.log('\n\n✅ Pre-computation completed!');
-  console.log(`📈 Statistics:`);
-  console.log(`   - New embeddings generated: ${generated}`);
-  console.log(`   - Already cached: ${cached}`);
-  console.log(`   - Errors: ${errors}`);
-  console.log(`   - Total cache entries: ${Object.keys(cache).length}`);
-  console.log(`\n💾 Cache saved to: ${cacheFile}`);
-
-  if (errors === 0) {
-    console.log('\n🎉 All embeddings are ready! The app will now respond much faster.');
-  } else {
-    console.log('\n⚠️  Some embeddings failed to generate. You may want to run this script again.');
-  }
+  fs.writeFileSync(outFile, JSON.stringify(cache));
+  const sizeBytes = fs.statSync(outFile).size;
+  const sizeMB = (sizeBytes / (1024 * 1024)).toFixed(2);
+  console.log(`\nDone. Wrote ${Object.keys(cache).length} entries to ${outFile} (${sizeMB} MB)`);
 }
 
-precomputeEmbeddings().catch(console.error);
+main().catch((err) => {
+  console.error('FAILED:', err);
+  process.exit(1);
+});

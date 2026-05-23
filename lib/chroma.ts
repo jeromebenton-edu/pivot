@@ -300,6 +300,14 @@ function getCacheFilePath(): string {
   return cwdPath;
 }
 
+// Committed read-only cache shipped with the repo for fast cold starts (#cold-start).
+// Keyed by `${provider}_${chunkId}_${hash}` — provider prefix forces a clean cache miss
+// if the embedding provider changes (e.g. OpenAI→Voyage), which is the correct fail-safe
+// against dimension-mismatched embeddings. Never written to at runtime.
+function getCommittedCacheFilePath(): string {
+  return path.join(process.cwd(), 'data', 'embeddings-cache.json');
+}
+
 // In-memory embeddings cache — loaded from disk once, served from memory thereafter
 // Capped at MAX_EMBEDDINGS_CACHE entries to prevent unbounded growth
 const MAX_EMBEDDINGS_CACHE = 5000; // Lowered from 10000 to reduce memory/serialization spike (#R8)
@@ -336,20 +344,41 @@ async function getEmbeddingsCache(): Promise<Map<string, number[]>> {
 
   globalCacheState.__pivotCacheLoadPromise = (async () => {
     const cache = new Map<string, number[]>();
+
+    // Load committed read-only cache FIRST so runtime-generated entries can overwrite on collision (#cold-start)
+    try {
+      const committedFile = getCommittedCacheFilePath();
+      if (existsSync(committedFile)) {
+        const loadStart = Date.now();
+        const data = await fs.readFile(committedFile, 'utf-8');
+        const parsed = JSON.parse(data) as Record<string, number[]>;
+        for (const [key, value] of Object.entries(parsed)) {
+          cache.set(key, value);
+        }
+        log.info('Loaded committed embeddings cache', { count: cache.size, durationMs: Date.now() - loadStart });
+      }
+    } catch (error) {
+      log.error('Could not load committed embedding cache', { error: error instanceof Error ? error.message : String(error) });
+    }
+
+    // Overlay writable cache — runtime entries (e.g. query embeddings) win on key collision
     try {
       const cacheFile = getCacheFilePath();
       if (existsSync(cacheFile)) {
         const loadStart = Date.now();
         const data = await fs.readFile(cacheFile, 'utf-8'); // Async read (#32)
         const parsed = JSON.parse(data) as Record<string, number[]>;
+        let overlaid = 0;
         for (const [key, value] of Object.entries(parsed)) {
           cache.set(key, value);
+          overlaid++;
         }
-        log.info('Loaded cached embeddings into memory', { count: cache.size, durationMs: Date.now() - loadStart });
+        log.info('Overlaid writable embeddings cache', { count: overlaid, totalAfter: cache.size, durationMs: Date.now() - loadStart });
       }
     } catch (error) {
-      log.error('Could not load embedding cache', { error: error instanceof Error ? error.message : String(error) });
+      log.error('Could not load writable embedding cache', { error: error instanceof Error ? error.message : String(error) });
     }
+
     globalCacheState.__pivotEmbeddingsCache = cache;
     globalCacheState.__pivotCacheLoadPromise = null;
     return cache;
