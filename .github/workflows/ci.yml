@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# npm, not bun: the repo ships package-lock.json (bun.lock was removed in
+# aed34de) and Vercel builds with npm, so CI matches what actually deploys.
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test
+
+  build:
+    name: Build
+    needs: [lint, typecheck, test]
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: sk-test-placeholder-for-build
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+# The e2e job is intentionally absent. It could never have run: @playwright/test
+# is not declared in package.json (so `playwright test` exits 127), and
+# playwright.config.ts starts its webServer with `bun run dev`, which needs a
+# toolchain this workflow does not install. e2e/*.spec.ts is therefore unverified.
+# Restoring it means adding the Playwright dependency and pointing webServer at
+# npm — tracked separately rather than left as a permanently red job here.
