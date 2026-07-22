@@ -67,3 +67,7 @@ __pycache__/
 CRITIQUE.md
 supabase/.temp/
 COMMERCIALIZATION.md
+
+# Playwright
+playwright-report/
+test-results/

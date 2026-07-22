@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Conversational Business Intelligence Platform",
+  title: "Pivot — Conversational Business Intelligence Platform",
   description: "A reference architecture demonstrating Retrieval-Augmented Generation and Model Context Protocol for conversational AI",
 };
 
