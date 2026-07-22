@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { isEnvironmentValid } from '@/lib/env';
 import { isDBAvailable } from '@/lib/db/supply-chain';
 import { createLogger } from '@/lib/logger';
+import { getProviderHealth, type ProviderHealth } from '@/lib/llm-health';
+import type { LLMProvider } from '@/lib/llm-client';
 
 const log = createLogger('health');
 
@@ -13,8 +15,10 @@ interface HealthCheck {
     environment: boolean;
     database: boolean;
     forecast: boolean;
+    llm: boolean;
     timestamp: string;
   };
+  providers: Record<LLMProvider, ProviderHealth>;
 }
 
 export async function GET() {
@@ -22,8 +26,23 @@ export async function GET() {
     environment: false,
     database: false,
     forecast: false,
+    llm: false,
     timestamp: new Date().toISOString(),
   };
+
+  // Circuit-breaker state — reflects real call outcomes, not a probe (#R9)
+  const rawProviders = getProviderHealth();
+  checks.llm = Object.values(rawProviders).some(p => p.available);
+
+  // This endpoint is unauthenticated — upstream error strings can echo key
+  // fragments and account details, so only expose them outside production.
+  const exposeReason = process.env.NODE_ENV !== 'production';
+  const providers = Object.fromEntries(
+    Object.entries(rawProviders).map(([name, p]) => [
+      name,
+      { ...p, reason: exposeReason ? p.reason : null },
+    ]),
+  ) as Record<LLMProvider, ProviderHealth>;
 
   try {
     checks.environment = isEnvironmentValid();
@@ -45,12 +64,13 @@ export async function GET() {
     checks.forecast = false;
   }
 
-  // Environment is required; database and forecast are optional (app works with fallbacks)
-  const status: HealthCheck['status'] = checks.environment
+  // Environment and at least one usable LLM provider are required; database and
+  // forecast are optional (app works with fallbacks)
+  const status: HealthCheck['status'] = checks.environment && checks.llm
     ? (checks.database && checks.forecast ? 'ok' : 'degraded')
     : 'down';
 
-  const response: HealthCheck = { status, checks };
+  const response: HealthCheck = { status, checks, providers };
 
   return NextResponse.json(response, {
     status: status === 'down' ? 503 : 200,

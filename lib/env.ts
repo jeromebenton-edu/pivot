@@ -15,6 +15,7 @@ export interface EnvironmentConfig {
   CHROMA_COLLECTION_NAME?: string;
   VOYAGE_API_KEY?: string;
   DATABASE_URL?: string;        // PostgreSQL connection string for SQL layer
+  LLM_PROVIDER?: 'openai' | 'anthropic';  // Pins the primary provider; unset = auto
 }
 
 class EnvironmentError extends Error {
@@ -54,6 +55,21 @@ export function validateEnvironment(): EnvironmentConfig {
     }
   }
 
+  // Optional primary-provider pin. Ignored if that provider has no valid key,
+  // so a stale pin can never leave the app with no usable provider.
+  let llmProvider: 'openai' | 'anthropic' | undefined;
+  const pinned = process.env.LLM_PROVIDER?.trim().toLowerCase();
+  if (pinned === 'openai' || pinned === 'anthropic') {
+    const keyed = pinned === 'openai' ? hasOpenAI : hasAnthropic;
+    if (keyed) {
+      llmProvider = pinned;
+    } else {
+      log.warn('LLM_PROVIDER ignored — no valid API key for that provider', { pinned });
+    }
+  } else if (pinned) {
+    log.warn('LLM_PROVIDER must be "openai" or "anthropic" — ignoring', { pinned });
+  }
+
   // Only return keys that pass format validation — prevents downstream from using
   // truthy but invalid placeholder values like "your-key-here" (#4 R7)
   return {
@@ -65,6 +81,7 @@ export function validateEnvironment(): EnvironmentConfig {
     CHROMA_COLLECTION_NAME: process.env.CHROMA_COLLECTION_NAME,
     VOYAGE_API_KEY: process.env.VOYAGE_API_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
+    LLM_PROVIDER: llmProvider,
   };
 }
 
