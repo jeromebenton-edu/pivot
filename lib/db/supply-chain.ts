@@ -62,6 +62,38 @@ export function isDBAvailable(): boolean {
   return getDbAvailable();
 }
 
+/**
+ * Actively probe the database for health reporting.
+ *
+ * isDBAvailable() answers "has init already succeeded in this process?" — the
+ * right question for query routing, but wrong for /api/health: a freshly booted
+ * server reports false until some unrelated request happens to initialize the
+ * pool, so the endpoint flickers false→true with no change in the database (#R9).
+ *
+ * This runs a cheap `SELECT 1` instead. It deliberately does NOT call
+ * initializeSupplyChainDB(), so a health check can never trigger a table seed.
+ */
+export async function checkDBHealth(timeoutMs = 2000): Promise<boolean> {
+  if (!process.env.DATABASE_URL) return false;
+
+  try {
+    const probe = getPool().query('SELECT 1');
+    // Bound the wait — the pool's statement_timeout is 10s, far too slow for a
+    // health endpoint, and connection setup can hang longer still.
+    const timeout = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('DB health probe timed out')), timeoutMs);
+    });
+    // Swallow a late rejection from the losing promise so it can't surface as an
+    // unhandled rejection after the race settles.
+    probe.catch(() => {});
+    await Promise.race([probe, timeout]);
+    return true;
+  } catch (error) {
+    log.warn('DB health probe failed', { error: (error as Error).message });
+    return false;
+  }
+}
+
 function getPool(): Pool {
   if (!globalPool.__pivotPgPool) {
     if (!process.env.DATABASE_URL) {

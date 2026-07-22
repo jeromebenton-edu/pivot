@@ -82,6 +82,7 @@ vi.mock('@/lib/validation', () => ({
 }));
 vi.mock('@/lib/db/supply-chain', () => ({
   isDBAvailable: vi.fn(() => false),
+  checkDBHealth: vi.fn(async () => false),
   getKnownTotals: vi.fn(async () => ({})),
 }));
 vi.mock('@/lib/db/messages', () => ({

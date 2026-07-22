@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isEnvironmentValid } from '@/lib/env';
-import { isDBAvailable } from '@/lib/db/supply-chain';
+import { checkDBHealth } from '@/lib/db/supply-chain';
 import { createLogger } from '@/lib/logger';
 import { getProviderHealth, type ProviderHealth } from '@/lib/llm-health';
 import type { LLMProvider } from '@/lib/llm-client';
@@ -50,8 +50,8 @@ export async function GET() {
     log.warn('Environment check failed');
   }
 
-  // Database check
-  checks.database = isDBAvailable();
+  // Database check — active probe, not the lazy-init latch (#R9)
+  checks.database = await checkDBHealth();
 
   // Forecast service check
   try {
