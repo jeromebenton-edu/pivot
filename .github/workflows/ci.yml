@@ -61,9 +61,22 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-# The e2e job is intentionally absent. It could never have run: @playwright/test
-# is not declared in package.json (so `playwright test` exits 127), and
-# playwright.config.ts starts its webServer with `bun run dev`, which needs a
-# toolchain this workflow does not install. e2e/*.spec.ts is therefore unverified.
-# Restoring it means adding the Playwright dependency and pointing webServer at
-# npm — tracked separately rather than left as a permanently red job here.
+  e2e:
+    name: E2E Tests
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: sk-test-placeholder-for-e2e
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      DEMO_MODE: 'true'
+      # 32 char minimum is enforced in deployed environments (lib/auth.ts)
+      BETTER_AUTH_SECRET: test-secret-for-ci-not-a-real-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

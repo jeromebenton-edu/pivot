@@ -18,8 +18,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'bun run dev',
+    // npm, not bun: the repo ships package-lock.json and CI installs with npm
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    // next dev cold start pulls in the embeddings cache; the 60s default is tight
+    timeout: 120_000,
   },
 });
