@@ -1,0 +1,48 @@
+# Keeps the free-tier Supabase project for Pivot from auto-pausing.
+# Supabase pauses Free projects after ~7 days of too little database activity,
+# so this calls a tiny SQL function (public.keepalive) through the REST API
+# twice a day. A failed run means the ping didn't land (often: project already
+# paused), and GitHub emails you about failed scheduled runs.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 3,15 * * *" # 03:17 and 15:17 UTC daily (off the hour to dodge Actions congestion)
+  workflow_dispatch: {}      # lets you run it by hand from the Actions tab
+
+permissions: {}              # needs no repo access
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call public.keepalive() via PostgREST
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error::Add the SUPABASE_URL and SUPABASE_ANON_KEY repository secrets first."
+            exit 1
+          fi
+          # apikey header only: works for both the legacy anon JWT and the newer
+          # sb_publishable_ key (which must NOT be sent as a Bearer token).
+          status=$(curl -sS -o response.txt -w '%{http_code}' \
+            --max-time 30 --retry 3 --retry-delay 15 --retry-all-errors \
+            -X POST "${SUPABASE_URL%/}/rest/v1/rpc/keepalive" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{}') || status="curl-failed"
+          echo "HTTP ${status}"
+          cat response.txt 2>/dev/null || true
+          echo
+          if [ "${status}" != "200" ]; then
+            echo "::error::Keep-alive ping failed (HTTP ${status}). If the project is paused, restore it from the Supabase dashboard; this job can't unpause it."
+            exit 1
+          fi
